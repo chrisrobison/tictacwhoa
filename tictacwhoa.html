@@ -70,26 +70,7 @@
       </style>
    </head>
    <body>
-      <table id="gameboard">
-         
-      </table>
-      <table id="statusboardTemplate" style="display:none">
-         <tr>
-            <th>Player</th>
-         </tr>
-         <tr>  
-            <td id='currentPlayer'>X</td>
-         </tr>
-         <tr>
-            <td id="controls"> 
-               Player 1:<br>
-               <select onchange="tictac.player[0]=this.options[this.selectedIndex].value" id='player1'><option>Human</option><option>Computer</option></select><br>
-               Player 2:<br>
-               <select onchange="tictac.player[1]=this.options[this.selectedIndex].value" id='player2'><option>Human</option><option>Computer</option></select><br><br>
-               <button onclick='tictac.init()' id='newgame'>New Game</button>
-            </td>
-         </tr>
-      </table>
+      <table id="gameboard"></table>
    </body>
    <script>
       (function(win) {
@@ -114,13 +95,25 @@
                   }
                }
                $$("gameboard").innerHTML = "";
-               tictac.player = [];
-               tictac.player[0] = $$("player1").options[$$("player1").selectedIndex].value;
-               tictac.player[1] = $$("player2").options[$$("player2").selectedIndex].value;
-               tictac.generateBoard();
+               tictac.newBoard();
+               $$("gameboard").onclick = tictac.click;
+               if (!tictac.player) {
+                  tictac.player = [];
+               }
+               
+               if (!tictac.player[0]) {
+                  tictac.player[0] = $$("player1").options[$$("player1").selectedIndex].value;
+               }
+               if (!tictac.player[1]) {
+                  tictac.player[1] = $$("player2").options[$$("player2").selectedIndex].value;
+               }
 
-               $$("player1").selectedIndex = (tictac.player[0]=="computer") ? 1 : 0;
-               $$("player2").selectedIndex = (tictac.player[1]=="computer") ? 1 : 0;
+               $$("player1").selectedIndex = (tictac.player[0]=="Computer") ? 1 : 0;
+               $$("player2").selectedIndex = (tictac.player[1]=="Computer") ? 1 : 0;
+            },
+            newBoard: function() {
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="vertical-align: top; padding: 0px; margin: 0px; border: 2px solid rgb(0, 0, 0); height: 100%;"><table id="statusboard"> <tbody><tr><th>Player</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.player[0]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.player[1]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player2"><option>Human</option><option>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
+               $$("gameboard").innerHTML = board;
             },
             move: function(spot, player) {
                var tgt = $$(spot),
@@ -161,14 +154,49 @@
                }
 
                var picks = [];
-               
-               for (var i in tictac.state.games["game"+tictac.state.currentGame]) {
-                  if (tictac.state.games["game"+tictac.state.currentGame][i]=="") {
-                     picks.push(i);
+               var pick = "";
+
+               var g = "game"+tictac.state.currentGame;
+               var game = tictac.state.games[g];
+               var me = tictac.state.currentSymbol();
+
+               for (var r=0; r<3; r++) {
+                  if (game[g+r+"0"] == me) {
+                     if ((game[g+r+"1"]==me) && (game[g+r+"2"]=="")) {
+                        pick = g+r+"2";
+                     }
+                     if ((game[g+r+"1"]=="") && (game[g+r+"2"]==me)) {
+                        pick = g+r+"1";
+                     }
+                     if ((game[g+"1"+r]==me) && (game[g+"2"+r]=="")) {
+                        pick = g+"2"+r;
+                     }
+                     if ((game[g+"1"+r]=="") && (game[g+"2"+r]==me)) {
+                        pick = g+"1"+r;
+                     }
+                  }
+                  if (game[g+r+"1"] == me) {
+                     if ((game[g+r+"0"]=="") && (game[g+r+"2"]==me)) {
+                        pick = g+r+"0";
+                     }
+                  }
+                  if (game[g+"1"+r] == me) {
+                     if ((game[g+"0"+r]=="") && (game[g+"2"+r]==me)) {
+                        pick = g+"0"+r;
+                     }
                   }
                }
-               var pick = Math.round(Math.random()*(picks.length-1));
-               tictac.move(picks[pick], tictac.state.currentSymbol()) 
+               console.log("Pick: "+pick);
+               
+               if (!pick) {
+                  for (var i in tictac.state.games["game"+tictac.state.currentGame]) {
+                     if (tictac.state.games["game"+tictac.state.currentGame][i]=="") {
+                        picks.push(i);
+                     }
+                  }
+                  pick = picks[Math.round(Math.random()*(picks.length-1))];
+               }
+               tictac.move(pick, tictac.state.currentSymbol()) 
             },
             nextPlayer: function() {
                tictac.state.currentPlayer ^= 1;
@@ -194,8 +222,9 @@
             },
             click: function(evt) {
                var tgt = evt.target;
-               
-               tictac.move(tgt.id, tictac.state.currentSymbol());
+               if (tgt.id.match(/^game/)) {
+                  tictac.move(tgt.id, tictac.state.currentSymbol());
+               }
                
             },
             clearDisabled: function() {
@@ -266,7 +295,6 @@
                         cell.innerHTML = game[id+r+c];
                         cell.className += " filled " + game[id+r+c];
                      }
-                     // cell.innerHTML = (Math.random()>.5) ? "X" : "O";
                      row.appendChild(cell);
                   }
                   container.appendChild(row);
@@ -281,7 +309,6 @@
                   }
                }
                tictac.state.game = snapshot;
-               console.dir(snapshot);
             },
             checkGame: function(game) {
                var win = false, winner="";
@@ -291,7 +318,6 @@
 
                // Check for diagnal wins
                if ((rgame[id+"00"]!="") && ((rgame[id+"00"] == rgame[id+"11"]) && (rgame[id+"00"] == rgame[id+"22"]))) {
-                  console.log("Diagnal!");
                   winner = rgame[id+"00"];
                   tictac.doWin([id+"00", id+"11", id+"22"], winner);
                   win = true;
@@ -300,7 +326,6 @@
                   win = true;
                   winner = rgame[id+"02"];
                   tictac.doWin([id+"02", id+"11", id+"20"], winner);
-                  console.log("Diagnal!");
                }
                
                // Check for wins by row and by column
@@ -312,7 +337,6 @@
                      win = true;
                      winner = rgame[id+"0"];
                      tictac.doWin([id+"0", id+"1", id+"2"], winner);
-                     console.log("Won across for " + rgame[id+"0"]);
                   }
                   
                   id = "game"+game;
@@ -322,7 +346,6 @@
                      win = true;
                      winner = rgame[id+"0"+r];
                      tictac.doWin([id+"0"+r, id+"1"+r, id+"2"+r], winner);
-                     console.log("Won down for " + rgame[id+"0"+r]+" [id: "+id+"0"+r+"]");
                   }
                }
 
@@ -348,7 +371,6 @@
 
                // Check for diagnal wins
                if ((rgame["00"]!="") && ((rgame["00"] == rgame["11"]) && (rgame["00"] == rgame["22"]))) {
-                  console.log("Game Win Diagnal!");
                   winner = rgame["00"];
                   tictac.gameWin(["00", "11", "22"], winner);
                   win = true;
