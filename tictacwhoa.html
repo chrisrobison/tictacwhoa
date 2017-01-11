@@ -4,9 +4,9 @@
       <title>Tic Tac Whoa!</title>
       <style>
          @import url('https://fonts.googleapis.com/css?family=Cabin');
-         body { font-size:24px; font-weight: bold; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; }
+         body { background-color:#000; font-size:24px; font-weight: bold; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
          table { border-collapse:collapse; margin:0px auto; }
-         #gameboard { font-weight: bold; }
+         #gameboard { font-weight: bold; background-color:#fff; }
          .game_col0, .game_col1 {
             border-right: 1em solid black;
          }
@@ -14,10 +14,10 @@
             border-bottom: 1em solid black;
          }
          .row0, .row1 {
-            border-bottom: .25em solid black;
+            border-bottom: .25em solid #666;
          }
          .col0, .col1 {
-            border-right: .25em solid black;
+            border-right: .25em solid #666;
          }
          td.cell {
             width: 2em;
@@ -62,22 +62,44 @@
          .OWIN { background-color:#333; }
          .XWINcell { background-color: rgba(230,230,0,.2); }
          .OWINcell { background-color: rgba(0,100,255,.2); }
-         .winImage { position:absolute;top:0px;left:0px;height:100%;opacity:.8; }
+         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity 2s ease-out; }
+         .winimage:hover { opacity:.3; }
          #statusboard { position:relative; height:100%; display:inline-table;}
          #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
          button { font-size: 14px; padding: .5em .25em;}
          .DRAW { background-color: #333; }
+         .WINcell { background-color:red; }
+         .winline { 
+            width: 25px;
+            height: 25px;
+            border: 2em solid #fff;
+            position: absolute;
+            left: 520px;
+            top: 250px;
+            border: 0.5em solid rgb(255, 255, 255);
+            box-shadow: rgba(0, 0, 0, 0.498039) 5px 5px 5px;
+            transition: height 2s cubic-bezier(0.16, 0.07, 0, 1.102), width 2s cubic-bezier(0.16, 0.07, 0, 1.102);
+         }
+         .Xgame { background-color:rgba(230,230,0,1); }
+         .Ogame { background-color:rgba(0,100,255,1); }
+         #wrapper { 
+            display:inline-block;
+            margin:0px auto;
+            border: 1em solid #aaa;
+         }
       </style>
    </head>
    <body>
-      <table id="gameboard"></table>
+      <div id="wrapper">
+         <table id="gameboard"></table>
+      </div>
    </body>
    <script>
       (function(win) {
          win.tictac = {
             state: {
                turn: 0,
-               currentPlayer: 0,
+               currentPlayer: 1,
                currentGame: "11",
                currentSymbol: function() { return ['X', 'O'][tictac.state.currentPlayer]; },
                games:{},
@@ -94,6 +116,12 @@
                      }
                   }
                }
+
+               var line = $$("winline");
+               if (line) {
+                  line.parentNode.removeChild(line);
+               }
+               tictac.state.currentPlayer ^= 1;
                $$("gameboard").innerHTML = "";
                tictac.newBoard();
                $$("gameboard").onclick = tictac.click;
@@ -110,12 +138,14 @@
 
                $$("player1").selectedIndex = (tictac.player[0]=="Computer") ? 1 : 0;
                $$("player2").selectedIndex = (tictac.player[1]=="Computer") ? 1 : 0;
-            },
-            newBoard: function() {
-               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="vertical-align: top; padding: 0px; margin: 0px; border: 2px solid rgb(0, 0, 0); height: 100%;"><table id="statusboard"> <tbody><tr><th>Player</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.player[0]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.player[1]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player2"><option>Human</option><option>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
-               $$("gameboard").innerHTML = board;
+               tictac.state.currentGame = "";
+               tictac.clearDisabled();
             },
             move: function(spot, player) {
+               if (!spot) {
+                  return false;
+               }
+
                var tgt = $$(spot),
                    gameInfo = spot.match(/game(\d\d)(\d\d)/);
 
@@ -217,7 +247,7 @@
                }
                var win = tictac.checkWin();
                if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
-                  setTimeout(function() { tictac.automove(); }, 1000);
+                  setTimeout(function() { tictac.automove(); }, 10);
                }
             },
             click: function(evt) {
@@ -316,51 +346,56 @@
                var rgame = tictac.state.games["game"+game];
                var id = "game"+game;
 
-               // Check for diagnal wins
-               if ((rgame[id+"00"]!="") && ((rgame[id+"00"] == rgame[id+"11"]) && (rgame[id+"00"] == rgame[id+"22"]))) {
-                  winner = rgame[id+"00"];
-                  tictac.doWin([id+"00", id+"11", id+"22"], winner);
-                  win = true;
-               }
-               if ((rgame[id+"02"]!="") && ((rgame[id+"02"] == rgame[id+"11"]) && (rgame[id+"02"] == rgame[id+"20"]))) {
-                  win = true;
-                  winner = rgame[id+"02"];
-                  tictac.doWin([id+"02", id+"11", id+"20"], winner);
-               }
-               
-               // Check for wins by row and by column
-               for (var r=0; r<3; r++) {
-                  id = "game"+game+""+r;
-                  if ((rgame[id+"0"]!="") && 
-                     ((rgame[id+"0"] == rgame[id+"1"]) && 
-                      (rgame[id+"0"] == rgame[id+"2"]))) {
+               if (tictac.state.game[game]=="") {
+                  // Check for diagnal wins
+                  if ((rgame[id+"00"]!="") && 
+                        ((rgame[id+"00"] == rgame[id+"11"]) && 
+                           (rgame[id+"00"] == rgame[id+"22"]))) {
+                     winner = rgame[id+"00"];
+                     tictac.doWin([id+"00", id+"11", id+"22"], winner);
                      win = true;
-                     winner = rgame[id+"0"];
-                     tictac.doWin([id+"0", id+"1", id+"2"], winner);
+                  }
+                  if ((rgame[id+"02"]!="") && 
+                        ((rgame[id+"02"] == rgame[id+"11"]) && 
+                           (rgame[id+"02"] == rgame[id+"20"]))) {
+                     win = true;
+                     winner = rgame[id+"02"];
+                     tictac.doWin([id+"02", id+"11", id+"20"], winner);
                   }
                   
-                  id = "game"+game;
-                  if ((rgame[id+"0"+r]!="") && 
-                     ((rgame[id+"0"+r] == rgame[id+"1"+r]) && 
-                      (rgame[id+"0"+r] == rgame[id+"2"+r]))) {
-                     win = true;
-                     winner = rgame[id+"0"+r];
-                     tictac.doWin([id+"0"+r, id+"1"+r, id+"2"+r], winner);
+                  // Check for wins by row and by column
+                  for (var r=0; r<3; r++) {
+                     id = "game"+game+""+r;
+                     if ((rgame[id+"0"]!="") && 
+                        ((rgame[id+"0"] == rgame[id+"1"]) && 
+                         (rgame[id+"0"] == rgame[id+"2"]))) {
+                        win = true;
+                        winner = rgame[id+"0"];
+                        tictac.doWin([id+"0", id+"1", id+"2"], winner);
+                     }
+                     
+                     id = "game"+game;
+                     if ((rgame[id+"0"+r]!="") && 
+                        ((rgame[id+"0"+r] == rgame[id+"1"+r]) && 
+                         (rgame[id+"0"+r] == rgame[id+"2"+r]))) {
+                        win = true;
+                        winner = rgame[id+"0"+r];
+                        tictac.doWin([id+"0"+r, id+"1"+r, id+"2"+r], winner);
+                     }
+                  }
+
+                  var space = 0;
+                  for (var i in rgame) {
+                     if (rgame[i]=="") {
+                        space++;
+                     }
+                  }
+                  if ((space==0) && (!winner)) {
+                     winner = "-";
+                     $$("container"+game).classList.add("DRAW");
+                     $$("container"+game).classList.add("disabled");
                   }
                }
-
-               var space = 0;
-               for (var i in rgame) {
-                  if (rgame[i]=="") {
-                     space++;
-                  }
-               }
-               if ((space==0) && (!winner)) {
-                  winner = "-";
-                  $$("container"+game).classList.add("DRAW");
-                  $$("container"+game).classList.add("disabled");
-               }
-
                return winner;
             },
             checkWin: function() {
@@ -418,9 +453,10 @@
                return winner;
             },
             gameWin: function(spots, winner) {
-               setTimeout(function() { 
-                  alert(winner + " Wins!");
-                  }, 2000);
+               console.log("Game winning spots:");
+               console.dir(spots);
+               tictac.winLine(spots, winner);
+               // setTimeout(function() { alert(winner + " Wins!"); }, 1000);
             },
             doWin: function(cells,winner) {
                for (var cell in cells) {
@@ -428,10 +464,63 @@
                }
                var g = cells[0].match(/game(\d\d)(\d\d)/)[1];
                $$("container"+g).classList.add(winner+"WIN");
-               var winImage = document.createElement("img");
-               winImage.src = winner + ".png";
-               winImage.style = "position:absolute;top:0px;left:0px;height:100%;";
-               $$("container"+g).appendChild(winImage);
+               
+               if (!$$("img"+g)) {
+                  var winImage = document.createElement("img");
+                  winImage.src = winner + ".png";
+                  winImage.id = "img"+g;
+                  winImage.className = "winimage";
+                  $$("container"+g).appendChild(winImage);
+               }
+            },
+            winLine: function(cells, winner) {
+               var line = document.createElement("div"), w, h;
+               line.id = "winline";
+               line.className = "winline "+winner+"game";
+
+               var s1 = cells[0].match(/(\d)(\d)/);
+               var s2 = cells[1].match(/(\d)(\d)/);
+               var s3 = cells[2].match(/(\d)(\d)/);
+               
+               if (parseInt(s1[1]) == parseInt(s2[1])) {
+                  console.log("Horizontal Win!");
+                  w = "500px";
+                  h = "25px";
+                  line.style.top = 275 + (190 * (s1[1]-1)) + "px";
+               }
+               if (parseInt(s1[2]) == parseInt(s2[2])) {
+                  console.log("Vertical Win!");
+                  w = "25px";
+                  h = "500px";
+                  line.style.top = "35px";
+                  line.style.left = 755 + (190 * (s1[2]-1)) + "px";
+               }
+               if (s1[1]==0 && s1[2] == 0 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==2) {
+                  w = "600px";
+                  h = "25px";
+                  line.style.transformOrigin = "0% 0%";
+                  line.style.top = "50px";
+                  line.style.left = "550px";
+                  line.style.transform="rotate(45deg)";
+               }
+               if (s1[1]==0 && s1[2] == 2 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==0) {
+                  line.style.transformOrigin = "0% 0%";
+                  w = "600px";
+                  h = "25px";
+                  line.style.top = "500px";
+                  line.style.left = "550px";
+                  line.style.transform="rotate(-45deg)";
+               }
+               
+               document.body.appendChild(line);
+               setTimeout(function() {
+                  line.style.width = w;
+                  line.style.height = h;
+               }, 100);
+            },
+            newBoard: function() {
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="vertical-align: top; padding: 0px; margin: 0px; border: 2px solid rgb(0, 0, 0); height: 100%;"><table id="statusboard"> <tbody><tr><th>Player</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.player[0]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.player[1]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player2"><option>Human</option><option>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
+               $$("gameboard").innerHTML = board;
             }
 
          }
