@@ -4,14 +4,18 @@
       <title>Tic Tac Whoa!</title>
       <style>
          @import url('https://fonts.googleapis.com/css?family=Cabin');
+         @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
          body { background-color:#000; font-size:24px; font-weight: bold; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
          table { border-collapse:collapse; margin:0px auto; }
-         #gameboard { font-weight: bold; background-color:#fff; }
+         #gameboard { font-weight: bold; background-color:#fff; margin:.25em; }
          .game_col0, .game_col1 {
             border-right: 1em solid black;
          }
          .game_row0, .game_row1 {
             border-bottom: 1em solid black;
+         }
+         #gameboard > tbody > tr > td {
+            padding: .5em;
          }
          .row0, .row1 {
             border-bottom: .25em solid #666;
@@ -34,9 +38,6 @@
          }
          .disabled td.O.cell:hover {
             background-color:rgba(0,100,255,.2);
-         }
-         #gameboard {
-            margin-top: .25em;
          }
          #gameboard > tr > td {
             padding:.5em;
@@ -62,9 +63,9 @@
          .OWIN { background-color:#333; }
          .XWINcell { background-color: rgba(230,230,0,.2); }
          .OWINcell { background-color: rgba(0,100,255,.2); }
-         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity 2s ease-out; }
+         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity 1s ease-out; }
          .winimage:hover { opacity:.3; }
-         #statusboard { position:relative; height:100%; display:inline-table;}
+         #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
          #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
          button { font-size: 14px; padding: .5em .25em;}
          .DRAW { background-color: #333; }
@@ -74,11 +75,11 @@
             height: 25px;
             border: 2em solid #fff;
             position: absolute;
-            left: 520px;
             top: 250px;
+            margin-left: 10px;
             border: 0.5em solid rgb(255, 255, 255);
             box-shadow: rgba(0, 0, 0, 0.498039) 5px 5px 5px;
-            transition: height 2s cubic-bezier(0.16, 0.07, 0, 1.102), width 2s cubic-bezier(0.16, 0.07, 0, 1.102);
+            transition: height .5s cubic-bezier(0.16, 0.07, 0, 1), width .5s cubic-bezier(0.16, 0.07, 0, 1);
          }
          .Xgame { background-color:rgba(230,230,0,1); }
          .Ogame { background-color:rgba(0,100,255,1); }
@@ -87,6 +88,9 @@
             margin:0px auto;
             border: 1em solid #aaa;
          }
+         #p1 { min-height:100px; }
+         #p2 { min-height:100px; }
+         #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; }
       </style>
    </head>
    <body>
@@ -116,9 +120,9 @@
                      }
                   }
                }
-
-               var line = $$("winline");
-               if (line) {
+               
+               var line;
+               while (line = $$("winline")) {
                   line.parentNode.removeChild(line);
                }
                tictac.state.currentPlayer ^= 1;
@@ -140,6 +144,16 @@
                $$("player2").selectedIndex = (tictac.player[1]=="Computer") ? 1 : 0;
                tictac.state.currentGame = "";
                tictac.clearDisabled();
+            },
+            changePlayer: function(player, who) {
+               tictac.player[player] = who;
+
+               if (who=="Computer") {
+                  $$("p"+(player+1)).innerHTML = '<img src="robot.png" height="50" width="50"><br>Computer';
+               }
+               if (who=="Human") {
+                  $$("p"+(player+1)).innerHTML = '<img src="anonymous.png" height="50" width="50"><br>Anonymous<br>Human';
+               }
             },
             move: function(spot, player) {
                if (!spot) {
@@ -288,20 +302,6 @@
                      
                      cell.appendChild(g);
                      row.appendChild(cell);
-                  }
-                  if (!scoreboard) {
-                     var cell = document.createElement("td");
-                     cell.id="scoreboard";
-                     cell.rowSpan = "3";
-                     // cell.innerHTML = $$("statusboard").outerHTML;
-                     var stat = document.createElement("table");
-                     stat.id = "statusboard";
-                     stat.innerHTML = $$("statusboardTemplate").innerHTML;
-                     cell.appendChild(stat);
-                     cell.style = "vertical-align:top;padding:0px;margin:0px;border:2px solid #000;height:100%";
-                     //$$("statusboard").parentNode.removeChild($$("statusboard"));
-                     row.appendChild(cell);
-                     scoreboard = 1;
                   }
                   container.appendChild(row);
                }
@@ -484,42 +484,68 @@
                
                if (parseInt(s1[1]) == parseInt(s2[1])) {
                   console.log("Horizontal Win!");
-                  w = "500px";
+                  w = "570px";
                   h = "25px";
-                  line.style.top = 275 + (190 * (s1[1]-1)) + "px";
+                  line.style.top = 310 + (210 * (s1[1]-1)) + "px";
                }
                if (parseInt(s1[2]) == parseInt(s2[2])) {
                   console.log("Vertical Win!");
                   w = "25px";
-                  h = "500px";
+                  h = "570px";
                   line.style.top = "35px";
-                  line.style.left = 755 + (190 * (s1[2]-1)) + "px";
+                  line.style.marginLeft = 285 + (210 * (s1[2]-1)) + "px";
                }
                if (s1[1]==0 && s1[2] == 0 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==2) {
-                  w = "600px";
+                  w = "780px";
                   h = "25px";
                   line.style.transformOrigin = "0% 0%";
-                  line.style.top = "50px";
-                  line.style.left = "550px";
+                  line.style.top = "30px";
+                  line.style.marginLeft = "40px";
                   line.style.transform="rotate(45deg)";
                }
                if (s1[1]==0 && s1[2] == 2 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==0) {
-                  line.style.transformOrigin = "0% 0%";
-                  w = "600px";
+                  w = "780px";
                   h = "25px";
-                  line.style.top = "500px";
-                  line.style.left = "550px";
+                  line.style.transformOrigin = "0% 0%";
+                  line.style.top = "600px";
+                  line.style.marginLeft = "4px";
                   line.style.transform="rotate(-45deg)";
                }
                
-               document.body.appendChild(line);
+               $$("wrapper").appendChild(line);
                setTimeout(function() {
                   line.style.width = w;
                   line.style.height = h;
                }, 100);
             },
+            dumpAll: function() {
+               var out = "";
+
+               for (var r=0; r<3; r++) {
+                  for (var c=0; c<3; c++) {
+                     out += tictac.dumpGame(r+""+c) + "\n";
+                  }
+               }
+               return dumpAll;
+            },
+            dumpGame: function(game) {
+               var out = "", val;
+
+               for (var r=0; r<3; r++) {
+                  var row = "";
+                  for (var c=0; c<3; c++) {
+                     val = tictac.games["game"+game]["game"+game+r+c];
+                     if (!val) {
+                        val = " ";
+                     }
+                     row += val;
+                  }
+                  out += row + "\n";
+               }
+               return out;
+            },
             newBoard: function() {
-               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="vertical-align: top; padding: 0px; margin: 0px; border: 2px solid rgb(0, 0, 0); height: 100%;"><table id="statusboard"> <tbody><tr><th>Player</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.player[0]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.player[1]=this.options[this.selectedIndex].value;tictac.nextPlayer();" id="player2"><option>Human</option><option>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th style="text-align:left;font-weight:bold;font-size:1.5em;font-family:\'Fontdiner Swanky\';">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td><br><br></td></tr><tr><th>Turn</th></tr><tr><td id="currentPlayer">X</td></tr><tr><th><img src="X.png" height="50" width="50"></th></tr><tr><td id="p1"><img src="anonymous.png" height="50" width="50"><br>Anonymous</td></tr><tr><th><img src="O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="robot.png" height="50" width="50"><br>Computer</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
                $$("gameboard").innerHTML = board;
             }
 
