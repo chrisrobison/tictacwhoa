@@ -58,7 +58,7 @@
          }
          th { background-color:#000; color:#0f0; }
          #currentPlayer { height:2em; }   
-         .disabled { background-color: rgba(0,0,0,.5); }
+         .disabled { background-color: rgba(0,0,0,.5); cursor: url(no.png), auto; }
          .XWIN { background-color:#333; }
          .OWIN { background-color:#333; }
          .XWINcell { background-color: rgba(230,230,0,.2); }
@@ -90,7 +90,9 @@
          }
          #p1 { min-height:100px; }
          #p2 { min-height:100px; }
-         #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; }
+         #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; }
+         .Xcursor { cursor: url(X.png) 50 50, auto; }
+         .Ocursor { cursor: url(O.png) 50 50, auto; }
       </style>
    </head>
    <body>
@@ -142,6 +144,10 @@
 
                $$("player1").selectedIndex = (tictac.player[0]=="Computer") ? 1 : 0;
                $$("player2").selectedIndex = (tictac.player[1]=="Computer") ? 1 : 0;
+
+               tictac.changePlayer(0, tictac.player[0]);
+               tictac.changePlayer(1, tictac.player[1]);
+
                tictac.state.currentGame = "";
                tictac.clearDisabled();
             },
@@ -243,9 +249,10 @@
                tictac.move(pick, tictac.state.currentSymbol()) 
             },
             nextPlayer: function() {
+               $$("wrapper").classList.remove(tictac.state.currentSymbol()+"cursor");
                tictac.state.currentPlayer ^= 1;
                tictac.state.turn++;
-
+               $$("wrapper").classList.add(tictac.state.currentSymbol()+"cursor");
                $$('currentPlayer').innerHTML = tictac.state.currentSymbol();
 
                tictac.checkGames();
