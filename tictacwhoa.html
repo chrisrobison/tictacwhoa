@@ -58,7 +58,7 @@
          }
          th { background-color:#000; color:#0f0; }
          #currentPlayer { height:2em; }   
-         .disabled { background-color: rgba(0,0,0,.5); cursor: url(no.png), auto; }
+         .disabled { background-color: rgba(0,0,0,.5); cursor: url(img/no.png), auto; }
          .XWIN { background-color:#333; }
          .OWIN { background-color:#333; }
          .XWINcell { background-color: rgba(230,230,0,.2); }
@@ -109,8 +109,8 @@
          #p1 { min-height:100px; }
          #p2 { min-height:100px; }
          #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; }
-         .Xcursor { cursor: url(Xcursor.png) 50 50, auto; }
-         .Ocursor { cursor: url(Ocursor.png) 50 50, auto; }
+         .Xcursor { cursor: url(img/Xcursor.png) 50 50, auto; }
+         .Ocursor { cursor: url(img/Ocursor.png) 50 50, auto; }
          .banner { 
             background-color:#000;
             text-align:left;
@@ -203,11 +203,11 @@
             },
             updatePlayer: function(player, who) {
                if (who=="Computer") {
-                  out =  '<img id="player'+(player+1)+'Pic" src="robot.png" height="50" width="50">';
+                  out =  '<img id="player'+(player+1)+'Pic" src="img/robot.png" height="50" width="50">';
 
                }
                if (who!="Computer") {
-                  out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].pic) ? tictac.state.players[player].pic : "anonymous.png")+'" height="50" width="50">';
+                  out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].pic) ? tictac.state.players[player].pic : "img/anonymous.png")+'" height="50" width="50">';
                }
                out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
                $$("p"+(player+1)).innerHTML = out;
@@ -651,7 +651,7 @@
                console.dir(spots);
                setTimeout(function() { tictac.winLine(spots, winner); }, 250);
                var img = document.createElement("img");
-               img.src = winner + ".png";
+               img.src = "img/" + winner + ".png";
                img.style.position = "absolute";
                img.style.width = "0px";
                img.style.height = "0px";
@@ -681,7 +681,7 @@
             gameDraw: function() {
                tictac.state.gameTies++;
                var img = document.createElement("img");
-               img.src = "draw.png";
+               img.src = "img/draw.png";
                img.style.position = "absolute";
                img.style.width = "0px";
                img.style.height = "0px";
@@ -723,7 +723,7 @@
                
                if (!$$("img"+g)) {
                   var winImage = document.createElement("img");
-                  winImage.src = winner + ".png";
+                  winImage.src = "img" + winner + ".png";
                   winImage.id = "img"+g;
                   winImage.className = "winimage";
                   $$("container"+g).appendChild(winImage);
@@ -734,7 +734,7 @@
                tictac.state.players[1].tie++;
                if (!$$("img"+game)) {
                   var winImage = document.createElement("img");
-                  winImage.src = "draw.png";
+                  winImage.src = "img/draw.png";
                   winImage.id = "img"+game;
                   winImage.className = "winimage";
                   $$("container"+game).appendChild(winImage);
@@ -812,8 +812,8 @@
                return out;
             },
             newBoard: function() {
-               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="X.png" height="50" width="50"></th></tr>';
-               board += '<tr><td id="p1"><img src="anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img id="player2Pic" src="O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="newgame">New Game</button></td></tr></tbody></table></td></tr>';
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="img/X.png" height="50" width="50"></th></tr>';
+               board += '<tr><td id="p1"><img src="img/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img id="player2Pic" src="img/O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="img/robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="newgame">New Game</button></td></tr></tbody></table></td></tr>';
                board += '<tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr>';
                board += '<tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
                $$("gameboard").innerHTML = board;
