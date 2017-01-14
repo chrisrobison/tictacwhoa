@@ -63,7 +63,9 @@
          .OWIN { background-color:#333; }
          .XWINcell { background-color: rgba(230,230,0,.2); }
          .OWINcell { background-color: rgba(0,100,255,.2); }
-         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity 1s ease-out; }
+         #gameCount { text-align:left; padding-left: 1em; }
+         .win { background-color: #0f0; }
+         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity .3s ease-out; }
          .winimage:hover { opacity:.3; }
          #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
          #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
@@ -83,37 +85,74 @@
          }
          .Xgame { background-color:rgba(230,230,0,1); }
          .Ogame { background-color:rgba(0,100,255,1); }
+         #gameboard td > table {
+            transition: all 2s; 
+         }
+         .currentGame { 
+            transform: scale(2);
+            background-color: #fff;
+            position: relative;
+            z-index: 100000;
+            transition: all 1s;
+         }
          #wrapper { 
             display:inline-block;
             margin:0px auto;
             border: 1em solid #aaa;
          }
+         #winnerImage { 
+            transition: all 1s;
+            z-index: 1000;
+            position:absolute;
+            transition: all 1s cubic-bezier(0.18, 1.275, 0.425, 1.7) 10ms;
+         }
          #p1 { min-height:100px; }
          #p2 { min-height:100px; }
          #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; }
-         .Xcursor { cursor: url(X.png) 50 50, auto; }
-         .Ocursor { cursor: url(O.png) 50 50, auto; }
+         .Xcursor { cursor: url(Xcursor.png) 50 50, auto; }
+         .Ocursor { cursor: url(Ocursor.png) 50 50, auto; }
+         .banner { 
+            background-color:#000;
+            text-align:left;
+            font-weight:bold;
+            font-size:1.5em;
+            font-family:"Fontdiner Swanky";
+            color: #00f;
+            text-shadow: -1px -1px 0 #ff0,  1px -1px 0 #ff0, -1px  1px 0 #ff0, 1px  1px 0 #ff0;        
+         }
+         select { width: 10em; }
       </style>
    </head>
    <body>
       <div id="wrapper">
          <table id="gameboard"></table>
       </div>
+      <div id='fb-root'></div>
    </body>
    <script>
       (function(win) {
          win.tictac = {
             state: {
+               gameCount: 0,
+               gameTies: 0,
                turn: 0,
+               symbols: ['X','O'],
                currentPlayer: 1,
                currentGame: "11",
                currentSymbol: function() { return ['X', 'O'][tictac.state.currentPlayer]; },
                games:{},
-               game:{}
+               game:{},
+               players:[ {score:0,smallscore:0,tie:0,loss:0},{score:0,smallscore:0,draw:0,loss:0,tie:0} ]
+            },
+            getPlayerIdx: function(player) {
+               return (player=="O") ? 1 : 0;
             },
             init: function() {
+               tictac.state.gameCount++;
+
                for (var r=0; r<3; r++) {
                   for (var c=0; c<3; c++) {
+                     tictac.state.game[r+""+c] = "";
                      tictac.state.games["game"+r+""+c] = {};
                      for (var r1=0; r1<3; r1++) {
                         for (var c1=0; c1<3; c1++) {
@@ -150,16 +189,59 @@
 
                tictac.state.currentGame = "";
                tictac.clearDisabled();
+               
+               var winimage = $$("winnerImage");
+               if (winimage) {
+                  winimage.parentNode.removeChild(winimage);
+               }
+               
+               $$("gameCount").innerHTML = "Game: " + tictac.state.gameCount + "<br>Ties: " + tictac.state.gameTies;
+               
+               if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
+                  tictac.automove();
+               }
+            },
+            updatePlayer: function(player, who) {
+               if (who=="Computer") {
+                  out =  '<img id="player'+(player+1)+'Pic" src="robot.png" height="50" width="50">';
+
+               }
+               if (who!="Computer") {
+                  out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].pic) ? tictac.state.players[player].pic : "anonymous.png")+'" height="50" width="50">';
+               }
+               out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
+               $$("p"+(player+1)).innerHTML = out;
             },
             changePlayer: function(player, who) {
-               tictac.player[player] = who;
-
-               if (who=="Computer") {
-                  $$("p"+(player+1)).innerHTML = '<img src="robot.png" height="50" width="50"><br>Computer';
+               if (who=="Facebook Login") {
+                  FB.login(function(response) {
+                     if (response.authResponse) {
+                        console.log('Welcome to Facebook!  Fetching your information.... ');
+                        FB.api('/me?fields=name,first_name,last_name,email,picture', function(response) {
+                           console.log('Good to see you, ' + response.name + '.');
+                           // document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '! <img src="'+response.picture.data.url+'">';
+                           tictac.player[player] = response.name;
+                           var plist = $$("player"+(player+1));
+                           var op = document.createElement("option");
+                           op.innerHTML = response.name;
+                           plist.appendChild(op);
+                           plist.selectedIndex = plist.options.length - 1;
+                           $$("player"+(player+1)+"Pic").src = response.picture.data.url;
+                           tictac.state.players[player].pic = response.picture.data.url;
+                           tictac.state.players[player].name = response.name;
+                           tictac.state.players[player].first_name = response.first_name;
+                           tictac.state.players[player].last_name = response.last_name;
+                           tictac.state.players[player].email = response.email;
+                        });
+                     } else {
+                        console.log('User cancelled login or did not fully authorize.');
+                     }
+                  }); 
+               } else {
+                  tictac.player[player] = who;
                }
-               if (who=="Human") {
-                  $$("p"+(player+1)).innerHTML = '<img src="anonymous.png" height="50" width="50"><br>Anonymous<br>Human';
-               }
+               
+               tictac.updatePlayer(player, who);
             },
             move: function(spot, player) {
                if (!spot) {
@@ -196,19 +278,14 @@
                   }
                }
                var pick = Math.round(Math.random()*(picks.length-1));
+               console.log("Picking game automatically: " + picks[pick]);
                return picks[pick];
             },
-            automove: function() {
-               if (tictac.state.currentGame == "") {
-                  tictac.state.currentGame = tictac.pickGame();
-               }
-
+            doPick: function(g, me) {
                var picks = [];
                var pick = "";
 
-               var g = "game"+tictac.state.currentGame;
                var game = tictac.state.games[g];
-               var me = tictac.state.currentSymbol();
 
                for (var r=0; r<3; r++) {
                   if (game[g+r+"0"] == me) {
@@ -236,26 +313,93 @@
                      }
                   }
                }
-               console.log("Pick: "+pick);
+
+               if ((game[g+"00"]==me) && (game[g+"11"]==me) && (game[g+"22"]=="")) {
+                  pick = g+"22";
+               }
+               if ((game[g+"00"]==me) && (game[g+"11"]=="") && (game[g+"22"]==me)) {
+                  pick = g+"11";
+               }
+               if ((game[g+"00"]=="") && (game[g+"11"]==me) && (game[g+"22"]==me)) {
+                  pick = g+"00";
+               }
+
+               if ((game[g+"02"]==me) && (game[g+"11"]==me) && (game[g+"20"]=="")) {
+                  pick = g+"20";
+               }
+               if ((game[g+"02"]==me) && (game[g+"11"]=="") && (game[g+"20"]==me)) {
+                  pick = g+"11";
+               }
+               if ((game[g+"02"]=="") && (game[g+"11"]==me) && (game[g+"20"]==me)) {
+                  pick = g+"02";
+               }
+               return pick; 
+            },
+            automove: function() {
+               var picks = [];
+               tictac.checkGames();
+               var win = tictac.checkWin();
+               if (win) {
+                  return false;
+               }
+               if (tictac.state.currentGame == "") {
+                  tictac.state.currentGame = tictac.pickGame();
+               }
+               
+               var pick = tictac.doPick("game"+tictac.state.currentGame, tictac.state.currentSymbol());
+               console.log("[AI] WIN Move: "+pick);
                
                if (!pick) {
+                  pick = tictac.doPick("game"+tictac.state.currentGame, tictac.state.symbols[tictac.state.currentPlayer^1]);
+                  console.log("[AI] BLOCK Move: "+pick);
+               }
+               console.log("[AI] No obvious move; attempting smart move:");
+
+               if (!pick) {
+                  var id = "game"+tictac.state.currentGame;
+                  var g = tictac.state.games[id];
+                  for (var r=0;r<3;r++) {
+                     if (g["game0"+r] == tictac.state.currentSymbol()) {
+                        if (tictac.game["1"+r] == "") {
+                           
+                        }
+                     }
+                  }
                   for (var i in tictac.state.games["game"+tictac.state.currentGame]) {
                      if (tictac.state.games["game"+tictac.state.currentGame][i]=="") {
                         picks.push(i);
                      }
                   }
-                  pick = picks[Math.round(Math.random()*(picks.length-1))];
+                  if (picks.length==0) {
+                     console.log("No open spaces in this game. Picking another game.");
+                     tictac.state.currentGame="";
+                     tictac.pickGame();
+            //         tictac.automove();
+                  } else {
+                     pick = picks[Math.round(Math.random()*(picks.length-1))];
+                     console.log("Pick: "+pick);
+                  }
                }
-               tictac.move(pick, tictac.state.currentSymbol()) 
+
+               if (pick) {
+                  tictac.move(pick, tictac.state.currentSymbol());
+               } else {
+                  console.log("Something weird happening. Resetting...");
+                  tictac.checkGames();
+               //   tictac.automove();
+               }
             },
-            nextPlayer: function() {
+            switchPlayer: function() {
                $$("wrapper").classList.remove(tictac.state.currentSymbol()+"cursor");
                tictac.state.currentPlayer ^= 1;
                tictac.state.turn++;
                $$("wrapper").classList.add(tictac.state.currentSymbol()+"cursor");
                $$('currentPlayer').innerHTML = tictac.state.currentSymbol();
-
+            },
+            nextPlayer: function() {
+               tictac.switchPlayer();
                tictac.checkGames();
+               
                tictac.clearDisabled();
                tictac.disableAll();
                
@@ -268,7 +412,7 @@
                }
                var win = tictac.checkWin();
                if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
-                  setTimeout(function() { tictac.automove(); }, 10);
+                  setTimeout(function() { tictac.automove(); }, 50);
                }
             },
             click: function(evt) {
@@ -342,10 +486,16 @@
                var snapshot = [];
                for (var r=0; r<3; r++) {
                   for (var c=0; c<3; c++) {
-                     snapshot[r+""+c] = tictac.checkGame(r + "" + c);
+                     if (tictac.state.game[r+""+c]=="") {
+                        tictac.state.game[r+""+c] = tictac.checkGame(r + "" + c);
+                     }
                   }
                }
-               tictac.state.game = snapshot;
+               
+               if (tictac.state.game[tictac.state.currentGame]!=="") {
+                  tictac.state.currentGame = "";
+                  tictac.disableAll();
+               }
             },
             checkGame: function(game) {
                var win = false, winner="";
@@ -398,6 +548,8 @@
                      }
                   }
                   if ((space==0) && (!winner)) {
+                     console.log("Sub-game DRAW: " + game);
+                     tictac.doDraw(game);
                      winner = "-";
                      $$("container"+game).classList.add("DRAW");
                      $$("container"+game).classList.add("disabled");
@@ -427,23 +579,24 @@
                // Check for wins by row and by column
                for (var r=0; r<3; r++) {
                   id = r;
-                  if ((rgame[id+"0"]!="") && 
+                  if ((rgame[id+"0"]!="") && (rgame["0"+id]!="-") && 
                      ((rgame[id+"0"] == rgame[id+"1"]) && 
                       (rgame[id+"0"] == rgame[id+"2"]))) {
                      win = true;
                      winner = rgame[id+"0"];
                      tictac.gameWin([id+"0", id+"1", id+"2"], winner);
                      console.log("Won across for " + rgame[id+"0"]);
+                     console.dir(rgame);
                   }
                   
-                  id = "";
-                  if ((rgame[id+"0"+r]!="") && 
-                     ((rgame[id+"0"+r] == rgame[id+"1"+r]) && 
-                      (rgame[id+"0"+r] == rgame[id+"2"+r]))) {
+                  if ((rgame["0"+id]!="") && (rgame["0"+id]!="-") &&
+                     ((rgame["0"+id] == rgame["1"+id]) && 
+                      (rgame["0"+id] == rgame["2"+id]))) {
                      win = true;
-                     winner = rgame[id+"0"+r];
-                     tictac.gameWin([id+"0"+r, id+"1"+r, id+"2"+r], winner);
-                     console.log("Won down for " + rgame[id+"0"+r]+" [id: "+id+"0"+r+"]");
+                     winner = rgame["0"+id];
+                     tictac.gameWin(["0"+id, "1"+id, "2"+id], winner);
+                     console.log("Won down for " + rgame["0"+id]+" [id: 0"+id+"]");
+                     console.dir(rgame);
                   }
                }
 
@@ -455,17 +608,113 @@
                }
                if ((space==0) && (!winner)) {
                   winner = "-";
+                  console.log("DRAW GAME");
+                  tictac.gameDraw();
                }
 
                return winner;
             },
+            flashWinners: function(winners, count) {
+               for (var i in winners) {
+                  var img = $$("img"+winners[i]);
+                  if (img) {
+                     if (count%2) {
+                        img.style.opacity = 1;
+                     } else {
+                        img.style.opacity = 0;
+                     }
+                  }
+               }
+               ++count;
+               if (count < 10) {
+                  setTimeout(function() { tictac.flashWinners(winners, count); }, 300);
+               }
+            },
+            updateScores: function() {
+               for (var p=0; p<2; p++) {
+                  $$("p"+p+"Score").innerHTML =  tictac.state.players[p].score+' [w:'+tictac.state.players[p].smallscore+' t:'+tictac.state.players[p].tie+']</span>';
+               }
+            },
             gameWin: function(spots, winner) {
+               var pidx = tictac.getPlayerIdx(winner);
+               tictac.state.players[pidx].score++;
+               tictac.updateScores();
+               
+               tictac.flashWinners(spots, 0);
+               
+               for (var i in spots) {
+                  $$("container"+spots[i]).classList.remove("disabled");
+                  $$("container"+spots[i]).classList.add("win");
+
+               }
                console.log("Game winning spots:");
                console.dir(spots);
-               tictac.winLine(spots, winner);
+               setTimeout(function() { tictac.winLine(spots, winner); }, 250);
+               var img = document.createElement("img");
+               img.src = winner + ".png";
+               img.style.position = "absolute";
+               img.style.width = "0px";
+               img.style.height = "0px";
+               img.style.left = (window.innerWidth / 2) + "px";
+               img.style.top = "20%";
+               img.id = "winnerImage";
+               img.style.opacity = 1;
+
+               $$("wrapper").appendChild(img);
+               setTimeout(function() {
+                     var img = $$("winnerImage");
+                     img.style.height = "600px";
+                     img.style.left = (window.innerWidth / 2) - 350 + "px";
+                     img.style.width = "600px";
+                     img.style.top = "30px";
+               }, 1000);
+               setTimeout(function() {
+                  var img = $$("winnerImage");
+                  img.style.opacity = 0;
+               }, 3000);
+
+               if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
+                  setTimeout(function() { tictac.init(); }, 5000);
+               }
                // setTimeout(function() { alert(winner + " Wins!"); }, 1000);
             },
+            gameDraw: function() {
+               tictac.state.gameTies++;
+               var img = document.createElement("img");
+               img.src = "draw.png";
+               img.style.position = "absolute";
+               img.style.width = "0px";
+               img.style.height = "0px";
+               img.style.left = (window.innerWidth / 2) + "px";
+               img.style.top = "20%";
+               img.style.opacity = 1;
+               img.id = "winnerImage";
+
+               $$("wrapper").appendChild(img);
+               setTimeout(function() {
+                  var img = $$("winnerImage");
+                  img.style.height = "600px";
+                  img.style.left = (window.innerWidth / 2) - 350 + "px";
+                  img.style.top = "0px";
+                  img.style.width = "600px";
+                  img.style.top = "30px";
+               }, 1);
+               setTimeout(function() {
+                  var img = $$("winnerImage");
+                  img.style.opacity = 0;
+               }, 3000);
+                if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
+                  setTimeout(function() { tictac.init(); }, 5000);
+               }
+            },
             doWin: function(cells,winner) {
+               var pidx = tictac.getPlayerIdx(winner);
+               var lidx = tictac.getPlayerIdx(winner)^1;
+               tictac.state.players[pidx].smallscore++;
+               tictac.state.players[lidx].loss++;
+
+               tictac.updateScores();
+               
                for (var cell in cells) {
                   $$(cells[cell]).classList.add(winner+"WINcell");
                }
@@ -478,6 +727,17 @@
                   winImage.id = "img"+g;
                   winImage.className = "winimage";
                   $$("container"+g).appendChild(winImage);
+               }
+            },
+            doDraw: function(game) {
+               tictac.state.players[0].tie++;
+               tictac.state.players[1].tie++;
+               if (!$$("img"+game)) {
+                  var winImage = document.createElement("img");
+                  winImage.src = "draw.png";
+                  winImage.id = "img"+game;
+                  winImage.className = "winimage";
+                  $$("container"+game).appendChild(winImage);
                }
             },
             winLine: function(cells, winner) {
@@ -541,7 +801,7 @@
                for (var r=0; r<3; r++) {
                   var row = "";
                   for (var c=0; c<3; c++) {
-                     val = tictac.games["game"+game]["game"+game+r+c];
+                     val = tictac.state.games["game"+game]["game"+game+r+c];
                      if (!val) {
                         val = " ";
                      }
@@ -552,7 +812,10 @@
                return out;
             },
             newBoard: function() {
-               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th style="text-align:left;font-weight:bold;font-size:1.5em;font-family:\'Fontdiner Swanky\';">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td><br><br></td></tr><tr><th>Turn</th></tr><tr><td id="currentPlayer">X</td></tr><tr><th><img src="X.png" height="50" width="50"></th></tr><tr><td id="p1"><img src="anonymous.png" height="50" width="50"><br>Anonymous</td></tr><tr><th><img src="O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="robot.png" height="50" width="50"><br>Computer</td></tr><tr><td id="controls">Player 1:<br><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option></select><br>Player 2:<br><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option></select><br><br><button onclick="tictac.init()" id="newgame">New Game</button></td></tr> </tbody></table></td></tr><tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr><tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="X.png" height="50" width="50"></th></tr>';
+               board += '<tr><td id="p1"><img src="anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img id="player2Pic" src="O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="newgame">New Game</button></td></tr></tbody></table></td></tr>';
+               board += '<tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr>';
+               board += '<tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
                $$("gameboard").innerHTML = board;
             }
 
@@ -562,5 +825,53 @@
          tictac.init();
          
       })(window);
-   </script>
+     
+     // Facebook login stuff
+     (function(d, s, id) {
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) return;
+       js = d.createElement(s); js.id = id;
+       js.src = "//connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+     
+     window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '113717832467893',
+          cookie     : true,  // enable cookies to allow the server to access 
+                              // the session
+          xfbml      : true,  // parse social plugins on this page
+          version    : 'v2.8' // use graph api version 2.8
+        });
+     }
+     function checkLoginState() {
+       FB.getLoginStatus(function(response) {
+         statusChangeCallback(response);
+       });
+     }
+
+     function statusChangeCallback(response) {
+       console.log('statusChangeCallback');
+       console.dir(response);
+       if (response.status === 'connected') {
+         logLogin();
+       } else if (response.status === 'not_authorized') {
+         document.getElementById('status').innerHTML = 'Please log ' + 'into this app.';
+       } else {
+         document.getElementById('status').innerHTML = 'Please log ' + 'into Facebook.';
+       }
+     }
+
+     function logLogin() {
+       console.log('Welcome!  Fetching your information.... ');
+       FB.api('/me?fields=name,first_name,last_name,email,picture', function(response) {
+         console.log('Successful login for: ' + response.name);
+         var p = tictac.state.loggingInPlayer || 0;
+
+         // document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '! <img src="'+response.picture.data.url+'">';
+
+       });
+     }
+
+</script>
 </html>
