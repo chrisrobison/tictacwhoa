@@ -2,34 +2,130 @@
 <html>
    <head>
       <title>Tic Tac Whoa!</title>
-      <link rel="stylesheet" type="text/css" href="default.css"/>
+      <style>
+         @import url('https://fonts.googleapis.com/css?family=Cabin');
+         @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
+         body { background-color:#000; font-size:24px; font-weight: bold; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
+         table { border-collapse:collapse; margin:0px auto; }
+         #gameboard { font-weight: bold; background-color:#fff; margin:.25em; }
+         .game_col0, .game_col1 {
+            border-right: 1em solid black;
+         }
+         .game_row0, .game_row1 {
+            border-bottom: 1em solid black;
+         }
+         #gameboard > tbody > tr > td {
+            padding: .5em;
+         }
+         .row0, .row1 {
+            border-bottom: .25em solid #666;
+         }
+         .col0, .col1 {
+            border-right: .25em solid #666;
+         }
+         td.cell {
+            width: 2em;
+            height: 2em;
+         }
+         td.cell:hover {
+            background-color:rgba(0,230,0,.2);
+         }
+         .disabled td.cell:hover {
+            background-color:rgba(0,0,0,0);
+         }
+         .disabled td.X.cell:hover {
+            background-color:rgba(230,230,0,.2);
+         }
+         .disabled td.O.cell:hover {
+            background-color:rgba(0,100,255,.2);
+         }
+         #gameboard > tr > td {
+            padding:.5em;
+         }
+
+         td {
+            text-align:center;
+            position:relative;
+         }
+         td.cell.filled:hover {
+            background-color:rgba(255,0,0,.2);
+         }
+         .X {
+            background-color:rgba(230,230,0,.2);
+         }
+         .O {
+            background-color:rgba(0,100,255,.2);
+         }
+         th { background-color:#000; color:#0f0; }
+         #currentPlayer { height:2em; }   
+         .disabled { background-color: rgba(0,0,0,.5); cursor: url(img/no.png), auto; }
+         .XWIN { background-color:#333; }
+         .OWIN { background-color:#333; }
+         .XWINcell { background-color: rgba(230,230,0,.2); }
+         .OWINcell { background-color: rgba(0,100,255,.2); }
+         #gameCount { text-align:left; padding-left: 1em; }
+         .win { background-color: #0f0; }
+         .winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity .3s ease-out; }
+         .winimage:hover { opacity:.3; }
+         #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
+         #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
+         button { font-size: 14px; padding: .5em .25em;}
+         .DRAW { background-color: #333; }
+         .WINcell { background-color:red; }
+         .winline { 
+            width: 25px;
+            height: 25px;
+            border: 2em solid #fff;
+            position: absolute;
+            top: 250px;
+            margin-left: 10px;
+            border: 0.5em solid rgb(255, 255, 255);
+            box-shadow: rgba(0, 0, 0, 0.498039) 5px 5px 5px;
+            transition: height .5s cubic-bezier(0.16, 0.07, 0, 1), width .5s cubic-bezier(0.16, 0.07, 0, 1);
+         }
+         .Xgame { background-color:rgba(230,230,0,1); }
+         .Ogame { background-color:rgba(0,100,255,1); }
+         #gameboard td > table {
+            transition: all 2s; 
+         }
+         .currentGame { 
+            transform: scale(2);
+            background-color: #fff;
+            position: relative;
+            z-index: 100000;
+            transition: all 1s;
+         }
+         #wrapper { 
+            display:inline-block;
+            margin:0px auto;
+            border: 1em solid #aaa;
+         }
+         #winnerImage { 
+            transition: all 1s;
+            z-index: 1000;
+            position:absolute;
+            transition: all 1s cubic-bezier(0.18, 1.275, 0.425, 1.7) 10ms;
+         }
+         #p1 { min-height:100px; }
+         #p2 { min-height:100px; }
+         #scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; }
+         .Xcursor { cursor: url(img/Xcursor.png) 50 50, auto; }
+         .Ocursor { cursor: url(img/Ocursor.png) 50 50, auto; }
+         .banner { 
+            background-color:#000;
+            text-align:left;
+            font-weight:bold;
+            font-size:1.5em;
+            font-family:"Fontdiner Swanky";
+            color: #00f;
+            text-shadow: -1px -1px 0 #ff0,  1px -1px 0 #ff0, -1px  1px 0 #ff0, 1px  1px 0 #ff0;        
+         }
+         select { width: 10em; }
+      </style>
    </head>
    <body>
       <div id="wrapper">
          <table id="gameboard"></table>
-      </div>
-      <div id="buttonbar">
-         <div class='button'><img id='newgame' src='img/newgame.png' alt='New Game'></div>
-         <div class='button'><img id='invite' src='img/invite.png' alt='Send a Game Invitation'></div>
-         <div class='button'><img id='requests' src='img/requests.png' alt='Game Requests'></div>
-         <div class='button'><img id='games' src='img/games.png' alt='Your Current Games'></div>
-         <div class='button'><img id='settings' src='img/settings.png' alt='Game Settings'></div>
-      </div>
-      <div id='inviteOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#invite" onclick="tictac.closeOverlay('invite')"><img src="img/close.png" class="closeImage"></a>
-         <h1>Invite a Friend</h1>
-      </div>
-      <div id='requestsOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#requests" onclick="tictac.closeOverlay('requests')"><img src="img/close.png" class="closeImage"></a>
-         <h1>Game Requests</h1>
-      </div>
-      <div id='gamesOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#games" onclick="tictac.closeOverlay('games')"><img src="img/close.png" class="closeImage"></a>
-         <h1>Your Current Games</h1>
-      </div>
-      <div id='settingsOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#settings" onclick="tictac.closeOverlay('settings')"><img src="img/close.png" class="closeImage"></a>
-         <h1>Game Settings</h1>
       </div>
       <div id='fb-root'></div>
    </body>
@@ -111,7 +207,7 @@
 
                }
                if (who!="Computer") {
-                  out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].photo) ? tictac.state.players[player].photo : "img/anonymous.png")+'" height="50" width="50">';
+                  out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].pic) ? tictac.state.players[player].pic : "img/anonymous.png")+'" height="50" width="50">';
                }
                out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
                $$("p"+(player+1)).innerHTML = out;
@@ -131,14 +227,11 @@
                            plist.appendChild(op);
                            plist.selectedIndex = plist.options.length - 1;
                            $$("player"+(player+1)+"Pic").src = response.picture.data.url;
-                           tictac.state.players[player].photo = response.picture.data.url;
-                           tictac.state.players[player].player = response.name;
+                           tictac.state.players[player].pic = response.picture.data.url;
+                           tictac.state.players[player].name = response.name;
                            tictac.state.players[player].first_name = response.first_name;
                            tictac.state.players[player].last_name = response.last_name;
                            tictac.state.players[player].email = response.email;
-                           tictac.state.players[player].fb_id = response.id;
-                           tictac.state.players[player].registered = false;
-                           tictac.doLogin(tictac.state.players[player], player);
                         });
                      } else {
                         console.log('User cancelled login or did not fully authorize.');
@@ -158,7 +251,7 @@
                var tgt = $$(spot),
                    gameInfo = spot.match(/game(\d\d)(\d\d)/);
 
-               if ((!gameInfo[1]) || (gameInfo[1] != tictac.state.currentGame) && (tictac.state.currentGame!="")) {
+               if ((gameInfo[1] != tictac.state.currentGame) && (tictac.state.currentGame!="")) {
                   return false;
                }
 
@@ -167,27 +260,15 @@
                }
 
                // Take care of DOM stuff first
-               var mark = document.createElement("img");
-               mark.src = "img/"+player+".png";
-               mark.className = "mark";
-
-               // tgt.innerHTML = player;
-               tgt.appendChild(mark);
-               setTimeout(function() { mark.classList.add("marked"); }, 50);
+               tgt.innerHTML = player;
                tgt.classList.add(player);
                
                // Log player move 
                tictac.state.games["game"+tictac.state.currentGame][spot] = player;
-               //$$('container' + tictac.state.currentGame).classList.add("disabled");
-               //$$('game' + tictac.state.currentGame).classList.remove("activeGame");
+               $$('container' + tictac.state.currentGame).classList.add("disabled");
                
                tictac.state.currentGame = gameInfo[2];
-
-               //$$('container' + tictac.state.currentGame).classList.remove("disabled");
-               //$$('game' + tictac.state.currentGame).classList.add("activeGame");
-
-
-               setTimeout(function() { tictac.nextPlayer(); }, 500);
+               tictac.nextPlayer();
             },
             pickGame: function() {
                var picks = [];
@@ -311,33 +392,27 @@
             switchPlayer: function() {
                $$("wrapper").classList.remove(tictac.state.currentSymbol()+"cursor");
                tictac.state.currentPlayer ^= 1;
+               tictac.state.turn++;
                $$("wrapper").classList.add(tictac.state.currentSymbol()+"cursor");
-               
                $$('currentPlayer').innerHTML = tictac.state.currentSymbol();
             },
             nextPlayer: function() {
-               tictac.state.turn++;
-               
                tictac.switchPlayer();
                tictac.checkGames();
                
                tictac.clearDisabled();
                tictac.disableAll();
-               tictac.clearActive();
-
-               if (tictac.state.currentGame) {
-                  $$('game' + tictac.state.currentGame).classList.add("activeGame");
-               }
+               
+              
                if (tictac.state.game[tictac.state.currentGame]=="") {
                   $$('container' + tictac.state.currentGame).classList.remove("disabled");
                } else {
                   tictac.state.currentGame="";
                   tictac.clearDisabled();
                }
-
                var win = tictac.checkWin();
                if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
-                  setTimeout(function() { tictac.automove(); }, 1500);
+                  setTimeout(function() { tictac.automove(); }, 50);
                }
             },
             click: function(evt) {
@@ -346,12 +421,6 @@
                   tictac.move(tgt.id, tictac.state.currentSymbol());
                }
                
-            },
-            clearActive: function() {
-               var els = document.getElementsByClassName("activeGame");
-               Array.prototype.forEach.call(els, function(el) {
-                  el.classList.remove("activeGame");
-               });
             },
             clearDisabled: function() {
                for (var r=0; r<3; r++) {
@@ -654,7 +723,7 @@
                
                if (!$$("img"+g)) {
                   var winImage = document.createElement("img");
-                  winImage.src = "img/" + winner + ".png";
+                  winImage.src = "img" + winner + ".png";
                   winImage.id = "img"+g;
                   winImage.className = "winimage";
                   $$("container"+g).appendChild(winImage);
@@ -716,38 +785,6 @@
                   line.style.height = h;
                }, 100);
             },
-            exec: function(action, data, callback) {
-               var xmlhttp = new XMLHttpRequest();
-               xmlhttp.open("POST", "cmd.php");
-               xmlhttp.setRequestHeader("Content-Type", "application/json");
-               xmlhttp.onreadystatechange = function() {
-                   if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                      callback(JSON.parse(xmlhttp.responseText));
-                      console.log("[RESPONSE] " + xmlhttp.responseText);
-                   }
-               }
-               xmlhttp.send(JSON.stringify({"action":action, "data":data}));
- 
-            },
-            checkInvites: function() {
-               
-               tictac.exec("invites", {id: tictac.state.me}, function(obj) {
-                  if (obj.invites.length) {
-                     console.log("Got an invite!!!");
-                     console.dir(obj);
-                  }
-               });
-            },
-            doLogin: function(data, player) {
-               tictac.exec("login", data, function(obj) {
-                  console.log("Logged in: ");
-                  console.dir(obj);
-                  for (var i in obj) {
-                     tictac.state.players[player][i] = obj[i];
-                  }
-                  tictac.state.me = obj['id'];
-               });
-            },
             dumpAll: function() {
                var out = "";
 
@@ -775,98 +812,16 @@
                return out;
             },
             newBoard: function() {
-               var board = '<tr id="r0"><td id="container00" class="game_cell game_row0 game_col0 disabled"><table class="game" id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_cell game_row0 game_col1 disabled"><table class="game" id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_cell game_row0 game_col2 disabled"><table class="game" id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="img/X.png" height="50" width="50"></th></tr>';
+               var board = '<tr id="r0"><td id="container00" class="game_row0 game_col0 disabled"><table id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_row0 game_col1 disabled"><table id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_row0 game_col2 disabled"><table id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="img/X.png" height="50" width="50"></th></tr>';
                board += '<tr><td id="p1"><img src="img/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img id="player2Pic" src="img/O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="img/robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="newgame">New Game</button></td></tr></tbody></table></td></tr>';
-               board += '<tr id="r1"><td id="container10" class="game_cell game_row1 game_col0 disabled"><table class="game" id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table class="game"></td><td id="container11" class="game_cell game_row1 game_col1"><table class="game" id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table class="game"></td><td id="container12" class="game_cell game_row1 game_col2 disabled"><table class="game" id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
-               board += '<tr id="r2"><td id="container20" class="game_cell game_row2 game_col0 disabled"><table class="game" id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table class="game"></td><td id="container21" class="game_cell game_row2 game_col1 disabled"><table class="game" id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table class="game"></td><td id="container22" class="game_cell game_row2 game_col2 disabled"><table class="game" id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
+               board += '<tr id="r1"><td id="container10" class="game_row1 game_col0 disabled"><table id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table></td><td id="container11" class="game_row1 game_col1"><table id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table></td><td id="container12" class="game_row1 game_col2 disabled"><table id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table></td></tr>';
+               board += '<tr id="r2"><td id="container20" class="game_row2 game_col0 disabled"><table id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table></td><td id="container21" class="game_row2 game_col1 disabled"><table id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table></td><td id="container22" class="game_row2 game_col2 disabled"><table id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table></td></tr>';
                $$("gameboard").innerHTML = board;
-            },
-            closeAllOverlays: function(except) {
-               var olays = document.querySelectorAll(".open");
-               for (var olay of olays) {
-                  if (olay.id != except+"Overlay") {
-                     tictac.closeOverlay(olay);
-                  }
-               }
-
-               var onimgs = document.querySelectorAll(".on");
-               for (var onimg of onimgs) {
-                  onimg.src = onimg.src.replace(/_on/,'');
-                  onimg.classList.remove('on');
-               }
-            },
-            doAction: function(action, evt) {
-               
-               if (action != "newgame") {
-                  tictac.closeAllOverlays(action);
-                  var olay = $$(action+"Overlay");
-                  olay.style.height = "0px";
-                  olay.style.width = "0px";
-                  olay.style.top = evt.clientY + "px";
-                  olay.style.left = evt.clientX + "px";
-                  olay.style.display = "block";
-                  olay.classList.add("open");
-
-                  tictac.state.overlay = {};
-                  tictac.state.overlay.originX = evt.clientX;
-                  tictac.state.overlay.originY = evt.clientY;
-                  $$(action).src = "img/" + action + "_on.png";
-                  $$(action).classList.add("on");
-
-                  setTimeout(function() {
-                     $$(action+"Overlay").style.height = "632px";
-                     $$(action+"Overlay").style.width = "626px";
-                     $$(action+"Overlay").style.top = "28px";
-                     olay.style.left = (($$("gameboard").clientWidth / 2) - 25) + "px";
-                  }, 50);
-               }
-
-               switch(action) {
-                  case "invite":
-
-                     break;
-
-                  case "requests":
-
-                     break;
-                  
-                  case "games":
-
-                     break;
-                  
-                  case "settings":
-                     break;
-                  
-                  case "newgame":
-                  default:
-                     tictac.init();
-                     break;
-
-               }
-            },
-            closeOverlay: function(who) {
-               var olay = (typeof who == "string") ? $$(who+"Overlay") : who;
-
-               if (olay) {
-                  olay.style.height = "0px";
-                  olay.style.width = "0px";
-                  olay.style.top = tictac.state.overlay.originY + "px";;
-                  olay.style.left = tictac.state.overlay.originX + "px";;
-                  
-                  setTimeout(function() {
-                     olay.style.display = "none";
-                  }, 1000);
-               }
             }
 
          }
          window.$$ = $$ = function(el) { return document.getElementById(el); };
-         var btns = document.querySelectorAll(".button > img");
-         for (let btn of btns) {
-            btn.addEventListener("click", function(event) {
-               tictac.doAction(event.currentTarget.id, event);
-            });
-         }
+            
          tictac.init();
          
       })(window);
