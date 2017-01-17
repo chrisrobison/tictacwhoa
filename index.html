@@ -139,7 +139,7 @@
                if (who!="Computer") {
                   out = '<img id="player'+(player+1)+'Pic" src="'+((tictac.state.players[player].photo) ? tictac.state.players[player].photo : "img/anonymous.png")+'" height="50" width="50">';
                }
-               out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
+               //out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
                $$("p"+(player+1)).innerHTML = out;
             },
             changePlayer: function(player, who) {
@@ -157,13 +157,14 @@
                            plist.appendChild(op);
                            plist.selectedIndex = plist.options.length - 1;
                            $$("player"+(player+1)+"Pic").src = response.picture.data.url;
-                           tictac.state.players[player].photo = response.picture.data.url;
-                           tictac.state.players[player].player = response.name;
-                           tictac.state.players[player].first_name = response.first_name;
-                           tictac.state.players[player].last_name = response.last_name;
-                           tictac.state.players[player].email = response.email;
-                           tictac.state.players[player].fb_id = response.id;
-                           tictac.state.players[player].registered = false;
+                           tictac.state.me = {};
+                           tictac.state.me.photo = tictac.state.players[player].photo = response.picture.data.url;
+                           tictac.state.me.player = tictac.state.players[player].player = response.name;
+                           tictac.state.me.first_name = tictac.state.players[player].first_name = response.first_name;
+                           tictac.state.me.last_name = tictac.state.players[player].last_name = response.last_name;
+                           tictac.state.me.email = tictac.state.players[player].email = response.email;
+                           tictac.state.me.fb_id = tictac.state.players[player].fb_id = response.id;
+                           tictac.state.me.registered = tictac.state.players[player].registered = false;
                            tictac.doLogin(tictac.state.players[player], player);
                         });
                      } else {
@@ -177,7 +178,7 @@
                tictac.updatePlayer(player, who);
                return false;
             },
-            move: function(spot, player) {
+            move: function(spot, player, noReport=false) {
                if (!spot) {
                   return false;
                }
@@ -205,13 +206,13 @@
                
                // Log player move 
                tictac.state.games["game"+tictac.state.currentGame][spot] = player;
+               tictac.state.currentGame = gameInfo[2];
                
-               if (tictac.player[0]!='Computer' && tictac.player[1]!='Computer') {
-                  tictac.exec("move", {move: spot, player: tictac.state.currentPlayer, player_id: tictac.state.me, for_player_id: tictac.state.players[tictac.state.currentPlayer^1].id, game_id: tictac.state.game_id, game: JSON.stringify(tictac.state.game), games: JSON.stringify(tictac.state.games)}, function(obj) {
+               if ((tictac.player[0]!='Computer' && tictac.player[1]!='Computer') && (!noReport)) {
+                  tictac.exec("move", {move: spot, player: tictac.state.currentPlayer, player_id: tictac.state.me.id, for_player_id: tictac.state.players[tictac.state.currentPlayer^1].id, game_id: tictac.state.game_id, game:JSON.stringify({ game: tictac.state.game, games: tictac.state.games}), player1_score:JSON.stringify(tictac.state.players[0]), player2_score:JSON.stringify(tictac.state.players[1])}, function(obj) {
                
                });
                }
-               tictac.state.currentGame = gameInfo[2];
 
                setTimeout(function() { tictac.nextPlayer(); }, 500);
             },
@@ -363,6 +364,10 @@
                var win = tictac.checkWin();
                if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
                   setTimeout(function() { tictac.automove(); }, 1500);
+               }
+
+               if (tictac.state.players[tictac.state.currentPlayer].id != tictac.state.me.id) {
+                  tictac.checkForMoves();
                }
             },
             click: function(evt) {
@@ -587,6 +592,7 @@
                }
             },
             updateScores: function() {
+               return false;
                for (var p=0; p<2; p++) {
                   $$("p"+p+"Score").innerHTML =  tictac.state.players[p].score+' [w:'+tictac.state.players[p].smallscore+' t:'+tictac.state.players[p].tie+']</span>';
                }
@@ -757,44 +763,56 @@
                xmlhttp.send(JSON.stringify({"action":action, "data":data}));
  
             },
+            makeBadge: function(action, cnt) {
+               var badge = $$(action + "Badge");
+               if (!badge) {
+                  badge = document.createElement("div");
+                  badge.classList.add("badge");
+                  badge.id = action + "Badge";
+                  $$(action).parentNode.appendChild(badge);
+                  setTimeout(function() { 
+                     badge.style.transform = "scale(1)";
+                  }, 50);
+                  $$(action + "Button").classList.add("on");
+               } else if (badge.innerHTML != cnt) {
+                  badge.innerHTML = cnt;
+                  badge.style.transform = "scale(2)";
+                  setTimeout(function() { 
+                     badge.style.transform = "scale(1)";
+                  }, 500);
+               }
+               badge.innerHTML = cnt;
+            },
             checkInvites: function() {
-               tictac.exec("invites", {id: tictac.state.me}, function(obj) {
+               tictac.exec("invites", {id: tictac.state.me.id}, function(obj) {
                   if (obj.invites.length) {
                      console.log("Got an invite!!!");
-                     tictac.fillRequests(obj.invites);
+                     tictac.fillRequests(obj.invites, obj.requests);
 
-                     var badge = $$("requestsBadge");
-                     if (!badge) {
-                        badge = document.createElement("div");
-                        badge.classList.add("badge");
-                        badge.id = "requestsBadge";
-                        $$("requests").parentNode.appendChild(badge);
-                        setTimeout(function() { 
-                           badge.style.transform = "scale(1)";
-                        }, 50);
-                        $$("requestsButton").classList.add("on");
-                     } else if (badge.innerHTML != obj.invites.length) {
-                        badge.style.transform = "scale(2)";
-                        setTimeout(function() { 
-                        badge.style.transform = "scale(1)";
-                        }, 500);
-                      }
-                     badge.innerHTML = obj.invites.length;
-
+                     tictac.makeBadge('requests', obj.invites.length);
                      console.dir(obj);
                   }
                });
             },
-            fillRequests: function(reqs) {
-               var out = "";
+            fillRequests: function(invites, reqs) {
+               var out = '<div class="requestWrapper">';
+               out += "<h2>Incoming</h2>";
+               for (var i in invites) {
+                  var invite = invites[i];
+                  out += '<table class="request"><tr><td style="width:50px"><img src="'+invite['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request from ' + invite['player'] + '</div>';
+                  out += 'Requested: ' + tictac.dateDuration(invite.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button class="highlight btn accept" onclick="tictac.accept(' + invite['id'] + ', ' + invite['player1_id'] + ')">Accept</button>';
+                  out += '<button class="highlight btn ignore" onclick="tictac.ignore(' + invite['id'] + ')">Ignore</button>';
+                  out += '<button class="highlight btn decline" onclick="tictac.decline(' + invite['id'] + ')">Decline</button>';
+                  out += '</td></tr></table>';
+               }
+               out += "</div><div class='requestWrapper'><h2>Outgoing</h2>";
                for (var i in reqs) {
                   var req = reqs[i];
-                  out += '<div class="requestWrapper"><table class="request"><tr><td><img src="'+req['photo']+'" class="profilePic"></td><td><div class="requestHeader">Game request from ' + req['player'] + '</div>';
-                  out += 'Requested: ' + req.created + '</td><td style="text-align:right"><button onclick="tictac.accept(' + req['player1_id'] + ')">Accept</button>';
-                  out += '<button onclick="tictac.ignore(' + req['player1_id'] + ')">Ignore</button>';
-                  out += '<button onclick="tictac.decline(' + req['player1_id'] + ')">Decline</button>';
-                  out += '</td></tr></table></div>';
+                  out += '<table class="request"><tr><td style="width:50px"><img src="'+req['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request to ' + req['player'] + '</div>';
+                  out += 'Requested: ' + tictac.dateDuration(req.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button style="width:10em" class="highlight btn cancel" onclick="tictac.cancelInvite(' + req['id'] + ')">Cancel Invitation</button>';
+                  out += '</td></tr></table>';
                }
+               out += "</div>";
                $$("requestsWrapper").innerHTML = out;
  
             },
@@ -814,28 +832,29 @@
             fillGames: function(games) {
                var out = "",
                myturn = "", theirturn="";
+               var imup = 0;
 
                for (var i in games) {
                   var game = games[i], opponent;
                   
                   var tmp = '<div class="gameWrapper"><table class="game"><tr>';
-
                   // If I'm player 1 and player_up is 0 then it is my turn
-                  if (game.player1_id == tictac.state.me) {
+                  if (game.player1_id == tictac.state.me.id) {
                      opponent = tictac.data.players[game.player2_id];
                      console.log("Got opponent: "+JSON.stringify(opponent));
 
                      tmp += '<td class="playerCell"><img src="'+tictac.state.players[0]['photo']+'" class="profilePic"><br>' + tictac.state.players[0]['player'] + '</td>';
                      tmp += '<td><h2>vs.</h2></td>';
                      tmp += '<td class="playerCell"><img src="'+opponent['photo']+'" class="profilePic"><br>' + opponent['player'] + '</td></tr>';
-                     tmp += '<tr><td colspan="3" style="background-color:#07c;"></td></tr>';
+                     tmp += '<tr><td colspan="3" style="background-color:#07c;height:2px;"></td></tr>';
                      tmp += '<tr><td style="text-align:right"><b>Started:</b></td><td colspan="2">' + tictac.formatDate(game.created) + '</td></tr>';
-                     tmp += '<tr><td style="text-align:right"><b>Last Move:</b></td><td colspan="2"><span class="caps">' + tictac.dateDuration(game.last_move, "now") + '</span></td></tr>';
-                     tmp += '<tr><td colspan="3" style="background-color:#07c;"></td></tr>';
+                     tmp += '<tr><td style="text-align:right"><b>Moved:</b></td><td colspan="2"><span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr>';
+                     tmp += '<tr><td colspan="3" style="background-color:#07c;height:2px;"></td></tr>';
                   
                      if (game.player_up==0) {
                         tmp += '<tr><td colspan="3" style="text-align:center"><button onclick="tictac.play(' + game['id'] + ')">Play</button></td></tr></table></div>';
                         myturn += tmp;
+                        imup++;
                      } else {
                         tmp += '<tr><td colspan="3" style="text-align:center"><span class="waiting">Waiting</span></td></tr></table></div>';
                         theirturn += tmp;
@@ -845,14 +864,15 @@
                      tmp += '<td class="playerCell"><img src="'+opponent['photo']+'" class="profilePic"><br>' + opponent['player'] + '</td>';
                      tmp += '<td><h2>vs.</h2></td>';
                      tmp += '<td class="playerCell"><img src="'+tictac.state.players[0]['photo']+'" class="profilePic"><br>' + tictac.state.players[0]['player'] + '</td></tr>';
-                     tmp += '<tr><td colspan="3" style="background-color:#07c;"></td></tr>';
+                     tmp += '<tr><td colspan="3" style="background-color:#07c;height:2px;"></td></tr>';
                      tmp += '<tr><td style="text-align:right"><b>Started:</b></td><td colspan="2">' + tictac.formatDate(game.created) + '</td></tr>';
-                     tmp += '<tr><td style="text-align:right"><b>Last Move:</b></td><td colspan="2"><span class="caps">' + tictac.dateDuration(game.last_move, "now") + '</span></td></tr>';
-                     tmp += '<tr><td colspan="3" style="background-color:#07c;"></td></tr>';
+                     tmp += '<tr><td style="text-align:right"><b>Moved:</b></td><td colspan="2"><span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr>';
+                     tmp += '<tr><td colspan="3" style="background-color:#07c;height:2px;"></td></tr>';
                  
                      if (game.player_up==1) {
                         tmp += '<tr><td colspan="3" style="text-align:center"><button onclick="tictac.play(' + game['id'] + ')">Play</button></td></tr></table></div>';
                         myturn += tmp;
+                        imup++;
                      } else {
                         tmp += '<tr><td colspan="3" style="text-align:center"><span class="waiting">Waiting</span></td></tr></table></div>';
                         theirturn += tmp;
@@ -860,7 +880,7 @@
                   }
                }
                out = "<h2>My Turn</h2>\n" + myturn + "\n<h2>Their Turn</h2>\n" + theirturn;
-
+               tictac.makeBadge('games', imup);
                $$("gamesWrapper").innerHTML = out;
             },
             dateDuration: function(start, end) {
@@ -883,8 +903,8 @@
                      return "Less than a minute ago";
                   }
 
-                  if (secs < 120) {
-                     return "About a minute ago";
+                  if (secs < 240) {
+                     return "A few minutes ago";
                   }
                   
                   var mins = Math.round(secs / 60);
@@ -895,32 +915,52 @@
 
                   var hrs = Math.floor(mins / 60);
                   if (hrs < 24) {
-                     return hrs + " hours ago";
+                     if (hrs<2) {
+                        return "An hour ago";
+                     }
+                     var s = (hrs<2) ? "" : "s";
+                     return hrs + " hour"+s+" ago";
                   }
 
                   var days = Math.floor(hrs / 24);
                   if (days < 7) {
-                     return days + " days ago";
+                     if (days<2) {
+                        return "Yesterday";
+                     }
+                     var s = (days<2) ? "" : "s";
+                     return days + " day"+s+" ago";
                   }
 
                   var weeks = Math.floor(days / 7);
                   if (weeks < 4) {
-                     return weeks + " weeks ago";
+                     if (weeks<2) {
+                        return "Last week";
+                     }
+                     var s = (weeks<2) ? "" : "s";
+                     return weeks + " week"+s+" ago";
                   }
 
                   var mos = Math.floor(days/30);
                   if (mos < 12) {
-                     return mos + " months ago";
+                     if (mos<12) {
+                        return "Last month";
+                     }
+                     var s = (mos<2) ? "" : "s";
+                     return mos + " month"+s+" ago";
                   }
 
                   var yrs = Math.floor(days/365);
-                  return yrs + " years ago";
+                  if (yrs<2) {
+                     return "Last year";
+                  }
+                  var s = (yrs<2) ? "" : "s";
+                  return yrs + " year"+s+" ago";
                }
             },
             formatDate: function(str) {
                var tyme = str.split(/\D/);
                var ampm = (tyme[3]>12) ? "pm" : "am";
-               tyme[3] -= 12;
+               tyme[3] = (tyme[3]>12) ? tyme[3] -= 12 : tyme[3];
 
                return tyme[1] + '/' + tyme[2] + ' ' + tyme[3] + ':' + tyme[4] + ampm;
             },
@@ -930,17 +970,15 @@
                });
             },
             getGames: function(start=0, cnt=50) {
-               tictac.exec("getGames", {"id":tictac.state.me,"start":start,"cnt":cnt}, function(obj) {
+               tictac.exec("getGames", {"id":tictac.state.me.id,"start":start,"cnt":cnt}, function(obj) {
                   if (obj.players) {
-                     console.log("[getGames] Got players:");
-                     console.dir(obj.players);
-
                      for (var i in obj.players) {
                         tictac.data.players[i] = obj.players[i];
                      }
                   }
                   tictac.fillGames(obj['games']);
                });
+               setTimeout(function() { tictac.getGames(); }, 10000);
             },
             doLogin: function(data, player) {
                tictac.exec("login", data, function(obj) {
@@ -948,8 +986,8 @@
                   console.dir(obj);
                   for (var i in obj) {
                      tictac.state.players[player][i] = obj[i];
+                     tictac.state.me[i] = obj[i];
                   }
-                  tictac.state.me = obj['id'];
                   tictac.state.loggedIn = true;
                   $$("fbloginButton").style.transform = "scale(0)";
 
@@ -960,7 +998,9 @@
                   setTimeout(function() {
                      $$("fbloginButton").style.display = "none";
                      tictac.checkInvites();
+                     setTimeout(function() { tictac.getGames(); }, 750);
                   }, 750);
+                  setTimeout(function() { tictac.checkInvites(); }, 10000);
                });
             },
             dumpAll: function() {
@@ -991,7 +1031,7 @@
             },
             newBoard: function() {
                var board = '<tr id="r0"><td id="container00" class="game_cell game_row0 game_col0 disabled"><table class="game" id="game00"><tr id="game000"><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr id="game001"><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr id="game002"><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td><td id="container01" class="game_cell game_row0 game_col1 disabled"><table class="game" id="game01"><tr id="game010"><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr id="game011"><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr id="game012"><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td><td id="container02" class="game_cell game_row0 game_col2 disabled"><table class="game" id="game02"><tr id="game020"><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr id="game021"><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr id="game022"><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td><td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="img/X.png" height="50" width="50"></th></tr>';
-               board += '<tr><td id="p1"><img src="img/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img id="player2Pic" src="img/O.png" width="50" height="50"></th></tr><tr><td id="p2"><img src="img/robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="gamenew">New Game</button></td></tr></tbody></table></td></tr>';
+               board += '<tr><td id="p1"><img src="img/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img src="img/O.png" width="50" height="50"></th></tr><tr><td id="p2"><img id="player2Pic" src="img/robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="gamenew">New Game</button></td></tr></tbody></table></td></tr>';
                board += '<tr id="r1"><td id="container10" class="game_cell game_row1 game_col0 disabled"><table class="game" id="game10"><tr id="game100"><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr id="game101"><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr id="game102"><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table class="game"></td><td id="container11" class="game_cell game_row1 game_col1"><table class="game" id="game11"><tr id="game110"><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr id="game111"><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr id="game112"><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table class="game"></td><td id="container12" class="game_cell game_row1 game_col2 disabled"><table class="game" id="game12"><tr id="game120"><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr id="game121"><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr id="game122"><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
                board += '<tr id="r2"><td id="container20" class="game_cell game_row2 game_col0 disabled"><table class="game" id="game20"><tr id="game200"><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr id="game201"><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr id="game202"><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table class="game"></td><td id="container21" class="game_cell game_row2 game_col1 disabled"><table class="game" id="game21"><tr id="game210"><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr id="game211"><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr id="game212"><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table class="game"></td><td id="container22" class="game_cell game_row2 game_col2 disabled"><table class="game" id="game22"><tr id="game220"><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr id="game221"><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr id="game222"><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
                $$("gameboard").innerHTML = board;
@@ -1090,6 +1130,7 @@
                   if (btn) {
                      btn.classList.remove("on");
                   }
+                  olay.classList.remove("open");
                   olay.style.height = "0px";
                   olay.style.width = "0px";
                   olay.style.top = tictac.state.overlay.originY + "px";;
@@ -1101,15 +1142,170 @@
 
                }
             },
-            accept: function(id) {
-               tictac.exec("start", {player1_id: id, player2_id: tictac.state.me}, function(obj) {
-                  tictac.state.game_id = obj.id;
+            updatePlayers: function() {
+               var p1, p2;
+               if (tictac.state.player1==tictac.state.me.id) {
+                  p1 = "<img id='player1Pic' src=" + tictac.state.me.photo + " height='50' width='50'><br>" + tictac.state.me.player;
+                  
+                  p2 = "<img id='player2Pic' src=" + tictac.data.players[tictac.state.player2].photo + " height='50' width='50'><br>" + tictac.data.players[tictac.state.player2].player;
+               } else {
+                  p1 = "<img id='player1Pic' src=" + tictac.data.players[tictac.state.player1].photo + " height='50' width='50'><br>" + tictac.data.players[tictac.state.player1].player;
+                  p2 = "<img id='player2Pic' src=" + tictac.state.me.photo + " height='50' width='50'><br>" + tictac.state.me.player;
+               }
+               
+               // p1 += "<br><span id='p0Score'>"+tictac.state.players[0].score+" [w:"+tictac.state.players[0].smallscore+" t:"+tictac.state.players[0].tie+"]</span>";
+               // p2 += "<br><span id='p1Score'>"+tictac.state.players[1].score+" [w:"+tictac.state.players[1].smallscore+" t:"+tictac.state.players[1].tie+"]</span>";
+               
+               $$("p1").innerHTML = p1;
+               $$("p2").innerHTML = p2;
 
+            },
+            accept: function(id, p1id) {
+               var game = JSON.stringify(tictac.initGameObject());
+               tictac.exec("start", {id: id, player1_id:p1id, player2_id:tictac.state.me.id, game: game}, function(obj) {
+                  tictac.state.game_id = obj.id;
+                  tictac.state.player1 = obj.player1_id;
+                  tictac.state.player2 = obj.player2_id;
+
+                  tictac.player[0] = (tictac.data.players[obj.player1_id] && tictac.data.players[obj.player1_id].player) || tictac.state.me.player;
+                  tictac.player[1] = (tictac.data.players[obj.player2_id] && tictac.data.players[obj.player2_id].player) || tictac.state.me.player;
+                  
+                  tictac.state.players[0] = tictac.data.players[obj.player1_id] || tictac.state.me;
+                  tictac.state.players[1] = tictac.data.players[obj.player2_id] || tictac.state.me;
+
+                  var gamedata = JSON.parse(obj.game);
+                  tictac.loadGame(gamedata.game, gamedata.games);
+                  tictac.updatePlayers();
+                  tictac.closeAllOverlays();
                });
             },
             loadGame: function(game, games) {
-               
+               console.log("loadGame");
+               console.dir(game);
+               console.dir(games);
+
+               tictac.state.game = game;
+               tictac.state.games = games;
+
+               tictac.newBoard();
+               var gamekey, cellkey;
+               for (var r=0; r<3; r++) {
+                  for (var c=0; c<3; c++) {
+                     gamekey = "game" + r + "" + c;
+                     for (var r1=0; r1<3; r1++) {
+                        for (var c1=0; c1<3; c1++) {
+                           cellkey = gamekey + r1 + "" + c1;
+                           console.log("gamekey: "+gamekey + " cellkey: "+cellkey + " val: "+games[gamekey][cellkey]);
+                           if (games[gamekey][cellkey]) {
+                              var mark = document.createElement("img");
+                              mark.src = "img/"+games[gamekey][cellkey]+".png";
+                              mark.className = "mark marked";
+                              $$(cellkey).appendChild(mark); 
+                           }
+                        }
+                     }
+                  }
+               }
+            },
+            saveGame: function() {
+               tictac.exec('saveGame', {id: tictac.state.game_id, game: JSON.stringify({ game: tictac.state.game, games: tictac.state.games})}, function(obj) {
+                  console.log("Game ID "+tictac.state.game_id+" saved.");
+                  console.dir(obj);
+                  tictac.closeAllOverlays();
+               });
+            },
+            play: function(id) {
+               tictac.exec("getGame", {id: id}, function(obj) {
+                  tictac.state.game_id = obj.id;
+                  tictac.state.player1 = obj.player1_id;
+                  tictac.state.player2 = obj.player2_id;
+
+                  tictac.player[0] = (tictac.data.players[obj.player1_id] && tictac.data.players[obj.player1_id].player) || tictac.state.me.player;
+                  tictac.player[1] = (tictac.data.players[obj.player2_id] && tictac.data.players[obj.player2_id].player) || tictac.state.me.player;
+                  
+                  tictac.state.players[0] = tictac.data.players[obj.player1_id] || tictac.state.me;
+                  tictac.state.players[1] = tictac.data.players[obj.player2_id] || tictac.state.me;
+                  
+                  tictac.state.currentPlayer = obj.player_up;
+
+                  var gamedata = JSON.parse(obj.game);
+                  tictac.loadGame(gamedata.game, gamedata.games);
+                  tictac.updatePlayers();
+                  tictac.closeAllOverlays();
+                  
+                  tictac.checkGames();
+                  tictac.clearDisabled();
+                  tictac.disableAll();
+                  tictac.clearActive();
+                  
+                  if (obj.last_move) {
+                     var parts = obj.last_move.match(/game(\d\d)(\d\d)/);
+                     tictac.state.currentGame = parts[2];
+                  }
+
+                  if (tictac.state.currentGame) {
+                     $$('game' + tictac.state.currentGame).classList.add("activeGame");
+                  }
+                  if (tictac.state.game[tictac.state.currentGame]=="") {
+                     $$('container' + tictac.state.currentGame).classList.remove("disabled");
+                  } else {
+                     tictac.state.currentGame="";
+                     tictac.clearDisabled();
+                  }
+                  
+                  if (tictac.state.players[tictac.state.currentPlayer].id != tictac.state.me.id) {
+                     tictac.checkForMoves();
+                  }
+
+               });
+                
+            },
+            invite: function(id) {
+               tictac.exec('invite', {player1_id: tictac.state.me.id, player2_id: id}, function(obj) {
+                  console.log("Sent invite for player ID "+id);
+                  console.dir(obj);
+                  tictac.closeAllOverlays();
+               });
+            },
+            initGameObject: function() {
+               var out = {game:{}, games: {}};
+               for (var r=0; r<3; r++) {
+                  for (var c=0; c<3; c++) {
+                     out.game[r+""+c] = "";
+                     out.games["game"+r+""+c] = {};
+                     for (var r1=0; r1<3; r1++) {
+                        for (var c1=0; c1<3; c1++) {
+                           out.games["game"+r+""+c]["game"+r+""+c+""+r1+""+c1] = "";
+                        }
+                     }
+                  }
+               }
+               return out;
+            },
+            cancelInvite: function(id) {
+               tictac.exec("cancelInvite", {id: id}, function(obj) {
+                  console.log("Invite ID "+id+" cancelled.");
+                  console.dir(obj);
+               });
+            },
+            checkForMoves: function() {
+               tictac.exec("getMoves", {for_player_id: tictac.state.me.id, game_id: tictac.state.game_id}, function(obj) {
+                  if (obj.moves.length) {
+                     console.log("gotMoves!");
+                     console.dir(obj);
+                     tictac.move(obj.moves[0].move, (obj.moves[0].player==1) ? "O" : "X", true);
+                     tictac.exec("ackMove", {id: obj.moves[0].id}, function(msg) {
+                        console.log(msg.data.msg);
+                     });
+                  }
+               });
+               setTimeout(function() {
+                  if (tictac.state.players[tictac.state.currentPlayer].id != tictac.state.me.id) {
+                     tictac.checkForMoves();
+                  }
+               }, 2000);
             }
+
          }
          window.$$ = $$ = function(el) { return document.getElementById(el); };
          var btns = document.querySelectorAll(".button > img");

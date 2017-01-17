@@ -21,13 +21,20 @@
             $out = getRecord('player', $in->data->fb_id, 'fb_id');
             $out["registered"] = true;
          }
+         if ($out['id']) {
+            setcookie("id", $out['id']);
+         }
          break;
       case "getPlayer":
          $out = getRecord('player', $in->data->id);
          
          break;
+      case "getGame":
+         $out = getRecord('game', $in->data->id);
+
+         break;
       case "getMoves":
-         $result = mysql_query("select * from move where for_player_id='".$in->data->for_player_id."' and game_id='".$in->data->game_id."'");
+         $result = mysql_query("select * from move where for_player_id='".$in->data->for_player_id."' and game_id='".$in->data->game_id."' and seen!=1");
          $out = new stdClass();
          $moves = array();
 
@@ -73,49 +80,122 @@
          }
          $out->players = $players;
          break;
+       case "saveGame":
+         $upd = "update game set ";
+         $arr = array();
+
+         foreach ($in->data as $key=>$val) {
+            $arr[] = $key."='".$val."'";   
+         }
+         $upd .= implode($arr, ", ");
+         doLog("[saveGame] ".$upd);
+         mysql_query($upd);
+         $out = getRecord('game', $in->data->id);
+
+         break;
        case "invites":
          $result = mysql_query("select * from invite where player2_id='".$in->data->id."'");
          $invites = array();
+         $requests = array();
          $players = array();
          while ($invite = mysql_fetch_assoc($result)) {
-            $player = getRecord('player', $invite['player1_id']);
-            $players[$invite['player1_id']] = $player;
-            $invite["player"] = $player["player"];
-            $invite["photo"] = $player["photo"];
+            if (!$players[$invite['player1_id']]) {
+               $player = getRecord('player', $invite['player1_id']);
+               $players[$invite['player1_id']] = $player;
+            }
+            $invite["player"] = $players[$invite['player1_id']]["player"];
+            $invite["photo"] = $players[$invite['player1_id']]["photo"];
             $invites[] = $invite;
          }
+         $result = mysql_query("select * from invite where player1_id='".$in->data->id."'");
+         while ($request = mysql_fetch_assoc($result)) {
+            if (!$players[$request['player2_id']]) {
+               $player = getRecord('player', $request['player2_id']);
+               $players[$request['player2_id']] = $player;
+            }
+            $request["player"] = $players[$request['player2_id']]["player"];
+            $request["photo"] = $players[$request['player2_id']]["photo"];
+            $requests[] = $request;
+         }
+          
          $out = new stdClass();
          $out->invites = $invites;
          $out->players = $players;
+         $out->requests = $requests;
 
          break;
       
       case "invite":
-         $fields = array('id', 'player1_id', 'player2_id', 'sent', 'accepted', 'created', 'last_modified');
+         $fields = array('player1_id', 'player2_id', 'created');
          $sql = makeInsert("invite", $fields, $in->data);
          doLog($sql);
          mysql_query($sql);
+         $id = mysql_insert_id();
+         $out = getRecord('invite', $id);
 
          break;
+      case "cancelInvite":
+         if ($in->data->id) {
+            $invite = getRecord('invite', $in->data->id);
+            $player = getRecord('player', $invite['player2_id']);
 
+            $sql = "delete from invite where id='".$in->data->id."'";
+            doLog("[cancelInvite] Canceling invite to ".$player['player']." [invite id {$in->data->id}]");
+            doLog("[cancelInvite] $sql");
+            mysql_query($sql);
+            $out = new stdClass();
+            $out->action = "notify";
+            $out->data = new stdClass();
+            $out->data->msg = "Canceled invitation to {$player['player']} [invite id {$in->data->id}]";
+         }
+         break;
       case "start":
          $data = $in->data;
-         $fields = array('player1_id', 'player2_id', 'created');
-         $sql = makeInsert("game", $fields, $data);
-         doLog("[START] $sql");
-         mysql_query($sql);
-         $id = mysql_insert_id();
-         $out = getRecord('game', $id);
+         
+         if ($data->id) {
+            $invite = getRecord('invite', $data->id);
+            mysql_query("delete from invite where id='{$data->id}'");
+            $data->player1_id = $invite['player1_id'];
+            $data->player2_id = $invite['player2_id'];
+
+            $fields = array('player1_id', 'player2_id', 'game', 'created');
+            $sql = makeInsert("game", $fields, $data);
+            doLog("[START] $sql");
+            mysql_query($sql);
+            $id = mysql_insert_id();
+            $out = getRecord('game', $id);
+         } 
 
          break;
+      case "ackMove":
+         $sql = "update move set seen=1 where id={$in->data->id}";
+         doLog("[ackMove] $sql");
+         mysql_query($sql);
+         $out = new stdClass();
+         $out->action = "notify";
+         $out->data = new stdClass();
+         $out->data->msg = "Move ID {$in->data->id} acknowledged";
 
+         break;
       case "move":
-         $fields = array('player', 'player_id', 'for_player_id', 'game_id', 'move', 'created');
+         $fields = array('player', 'player_id', 'for_player_id', 'game_id', 'move', 'mark', 'created');
+         if (!$in->data->mark) {
+            $in->data->mark = ($in->data->player==1) ? "O" : "X";
+         }
+
          $sql = makeInsert("move", $fields, $in->data);
          doLog("[MOVE] $sql");
          mysql_query($sql);
+         
          $id = mysql_insert_id();
          $out = getRecord('move', $id);
+         
+         // Store game state and set current player
+         $sql = "update game set game='".$in->data->game."', player_up='".($in->data->player^1)."', last_move='".$in->data->move."' where id='".$in->data->game_id."'";
+         doLog("[MOVE] Updated game: $sql");
+         mysql_query($sql);
+         
+
          break;
 
       case "update":
