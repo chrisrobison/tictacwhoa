@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Cabin');
 @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
-body { background-color:#000; font-size:24px; font-weight: bold; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
+body { background-color:#000; font-size:24px; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
 table { border-collapse:collapse; margin:0px auto; }
 #gameboard { font-weight: bold; background-color:#fff; margin:.25em; }
 .game_col0, .game_col1 {
@@ -63,7 +63,7 @@ th { background-color:#000; color:#0f0; }
 .winimage:hover { opacity:.3; }
 #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
 #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
-button { font-size: 14px; padding: .5em .25em;}
+button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 .DRAW { background-color: #333; }
 .WINcell { background-color:red; }
 .winline { 
@@ -128,9 +128,9 @@ button { font-size: 14px; padding: .5em .25em;}
    box-shadow: 0.25em 0.25em 0.25em rgba(0,0,0,.4);
 }
 .mark {
-   transition: all 1s cubic-bezier(0.18, 1.275, 0.425, 1.7) 10ms;
-   width:45px;
-   height:45px;
+   transition: all 400ms cubic-bezier(0.18, 1.275, 0.425, 1.5) 400ms;
+   width:40px;
+   height:40px;
    transform: scale(2);
    opacity:0;
 }
@@ -143,6 +143,16 @@ select { width: 10em; }
    height:5em;
    width:5em;
    display:inline-block;
+   position:relative;
+   background-color:#888;
+   transition: all 500ms cubic-bezier(0.18, 1.1, 0.425, 1.3) 500ms;
+   cursor: pointer;
+   vertical-align:top;
+   color:#ddd;
+}
+.button:hover {
+   background-color:#cc0;
+   cursor: pointer;
 }
 .button img {
    height: 5em;
@@ -159,18 +169,175 @@ select { width: 10em; }
    left: 353px;
    border:.5em solid rgba(0,100,255,.9);;
    border-radius: 2em; 
-   transition: all 750ms cubic-bezier(0.18, 1.275, 0.425, 1.0) 10ms;
+   transition: all 1000ms cubic-bezier(0.18, 1.275, 0.425, 1.0) 10ms;
    overflow:hidden;
+   box-shadow: .5em .5em .5em rgba(0,0,0,.4);
 }
 .overlay h1 {
    display: inline-block;
-   margin-left:-1em;
+   margin:.5em 0px 0px -.75em;
+   text-transform: uppercase;
+   font-family: "Fontdiner Swanky";
+   color: #ff0;
+   -webkit-text-stroke: .5px #05C;
+   font-size: 2em;
+   transform: scale(1.2);
+   text-shadow: 3px 3px 3px rgba(0,0,0,.4);
+
+}
+div.open {
+   overflow: visible;
 }
 .closeImage {
    height:50px;
    width:50px;
    padding: 1em;
 }
-.closeButton { float: left;}
+.closeButton { float: left; display:inline-block; margin-top:-2em; margin-left:-2em;}
+.badge {
+   display:inline-block;
+   position:absolute;
+   top:-.25em;
+   right:-.25em;
+   width: 2em;
+   height: 1.65em;
+   transform: scale(0);
+   background-color:#f00;
+   color:#fff;
+   border: 4px solid #fff;
+   box-shadow: .25em .25em .25em rgba(0,0,0,.4);
+   border-radius: 3em; 
+   padding-top:0.35em;
+   transition: all 500ms cubic-bezier(0.18, 1.275, 0.425, 1.3) 10ms;
+   z-index:9999;
+}
+#newgameOverlay {
+   height:362px;
+}
+#newgameOverlay p {
+   margin:.5em 1em;
+   font-size:1.2em;
+}
 
-
+#newgameOverlay button {
+   font-size: 1.3em;
+   display: inline-block;
+   border: 4px solid #ccc;
+   border-radius: 2em;
+   padding: .5em 1em;
+   margin-bottom: 0.5em;
+   width: 12em;
+}
+button.yes { background-color: #0b0; color:#fff; }
+button.no { background-color: #b00; color: #fff; }
+.on { background-color:#08c; }
+span.label {
+   display: inline-block;
+   overflow: hidden;
+   transition: all 500ms cubic-bezier(0.18, 1.1, 0.425, 1.2) 10ms;
+   transform: scaleY(0);
+}
+.button:hover span.label {
+   transform: scaleY(1);
+}
+.ok {
+   background-color:#69f;
+}
+table.request, table.players {
+   font-size:14px;
+}
+table.players {
+   height:11em;
+   width:12em;
+   overflow:hidden;
+}
+table.request td {
+   text-align:left;
+   padding:.5em;
+}
+table.players td {
+   text-align: left;
+   padding:.125em .25em;
+}
+.requestWrapper {
+   border: .4em solid #07f;
+   margin:.25em 1em;
+   border-radius: 1em;
+   box-shadow: 3px 3px 3px rgba(0,0,0,.4);
+   background-color:#fff;
+}
+.inviteWrapper {
+   display:inline-block;
+   padding:.25em;
+   float:left;
+   margin-left:1em;
+   border: .4em solid #07f;
+   margin:.25em 1em;
+   border-radius: 1em;
+   box-shadow: 3px 3px 3px rgba(0,0,0,.4);
+   background-color:#fff;
+}
+table.request {
+   width:100%;
+}
+table.request button, table.players button {
+   width: 5em;
+}
+.requestHeader, .playersHeader {
+font-size:1.1em;font-weight:bold;
+}
+.profilePic {
+   height:50px;
+   width:50px;
+}
+#invitesWrapper {
+   height:22em;
+   overflow:scroll;
+   width:80%;
+   margin:0px auto;
+}
+.profileCell {
+   width:5em;
+   text-align:center;
+}
+table.players td button, table.game td button {
+   padding: .5em .25em;
+   cursor: pointer;
+   border-radius: 2em;
+   border: 4px solid #8e2;
+   width: 8em;
+   color: #fff;
+   font-size: 1.2em;
+   text-shadow: 1px 1px 1px rgba(0,0,0,.5);
+   background-color: #6c0;
+   text-transform: uppercase;
+   box-shadow: 3px 3px 3px rgba(0,0,0,.5);
+   font-weight: bold;
+}
+#gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper {
+   overflow: scroll;
+   height: 20.4em;
+   background-color: rgba(255,255,255,.95);
+   border: .5em solid transparent;
+   border-radius: 2em;
+}
+.playerCell {
+   height:5em;
+   width:5em;
+   vertical-align:top;
+}
+.gameWrapper {
+   border:.25em solid #07c;
+   box-shadow: 3px 3px 3px rgba(0,0,0,.4);
+   background-color:#fff;
+   border-radius: 2em;
+   font-size: 18px;
+   margin: .5em 1em;
+   display: inline-block;
+   padding: .25em 1em;
+}
+h1, h2 { margin: 0px; }
+.caps { text-transform: capitalize; }
+.left { text-align: left; }
+.waiting { text-transform:uppercase; font-weight:bold; font-size:1.1em; }
+.

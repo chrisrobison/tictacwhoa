@@ -13,23 +13,81 @@
             $fields = array('id', 'player', 'email', 'fb_id', 'photo', 'created');
             $sql = makeInsert("player", $fields, $in->data);
             doLog("[LOGIN] $sql");
-            mysql_query($sql);
+
+            // Create new record
+            mysql_query($sql);   
             
-            $fetch = mysql_query("select * from player where fb_id='".$in->data->fb_id."'");
-            $out = mysql_fetch_assoc($fetch);
+            // Then fetch the newly created record to return to client
+            $out = getRecord('player', $in->data->fb_id, 'fb_id');
             $out["registered"] = true;
          }
          break;
+      case "getPlayer":
+         $out = getRecord('player', $in->data->id);
+         
+         break;
+      case "getMoves":
+         $result = mysql_query("select * from move where for_player_id='".$in->data->for_player_id."' and game_id='".$in->data->game_id."'");
+         $out = new stdClass();
+         $moves = array();
 
-      case "invites":
+         while ($move = mysql_fetch_assoc($result)) {
+            $moves[] = $move;
+         }
+         $out->moves = $moves;
+         break;
+       case "getGames":
+         doLog("[getGames] id: ".$in->data->id);
+         $sql = "select * from game where player1_id='".$in->data->id."' or player2_id='".$in->data->id."'";
+         doLog("[getGames] $sql");
+
+         $result = mysql_query($sql);
+         $out = new stdClass();
+         $games = array();
+         $players = array();
+
+         while ($game = mysql_fetch_assoc($result)) {
+            $games[] = $game;
+            if ($game['player1_id'] == $in->data->id) {
+               if (!$players[$game['player2_id']]) {
+                  $players[$game['player2_id']] = getRecord('player', $game['player2_id']);
+               }
+            } else if ($game['player2_id'] == $in->data->id) {
+               if (!$players[$game['player1_id']]) {
+                  $players[$game['player1_id']] = getRecord('player', $game['player1_id']);
+               }
+            }
+         }
+         
+         $out->players = $players;
+         $out->games = $games;
+         
+         break;
+       case "getPlayers":
+         $result = mysql_query("select * from player");
+         $out = new stdClass();
+         $players = array();
+
+         while ($player = mysql_fetch_assoc($result)) {
+            $players[] = $player;
+         }
+         $out->players = $players;
+         break;
+       case "invites":
          $result = mysql_query("select * from invite where player2_id='".$in->data->id."'");
          $invites = array();
+         $players = array();
          while ($invite = mysql_fetch_assoc($result)) {
+            $player = getRecord('player', $invite['player1_id']);
+            $players[$invite['player1_id']] = $player;
+            $invite["player"] = $player["player"];
+            $invite["photo"] = $player["photo"];
             $invites[] = $invite;
          }
          $out = new stdClass();
          $out->invites = $invites;
-         
+         $out->players = $players;
+
          break;
       
       case "invite":
@@ -46,15 +104,18 @@
          $sql = makeInsert("game", $fields, $data);
          doLog("[START] $sql");
          mysql_query($sql);
+         $id = mysql_insert_id();
+         $out = getRecord('game', $id);
 
          break;
 
       case "move":
-         $fields = array('player', 'move', 'created');
+         $fields = array('player', 'player_id', 'for_player_id', 'game_id', 'move', 'created');
          $sql = makeInsert("move", $fields, $in->data);
          doLog("[MOVE] $sql");
          mysql_query($sql);
-         
+         $id = mysql_insert_id();
+         $out = getRecord('move', $id);
          break;
 
       case "update":
@@ -124,7 +185,32 @@
       }
       return $new;
    }
+   
+   function getRecord($tbl, $id, $field="id") {
+      $sql = "select * from $tbl where $field='$id'";
+      doLog("[getRecord] $sql");
+      $dbh = mysql_query($sql);
+      $out = mysql_fetch_assoc($dbh);
 
+      return $out;
+   }
+
+   function getRecords($tbl, $id, $field="id", $extra="") {
+      $sql = "select * from $tbl where $field='$id' $extra";
+      doLog("[getRecord] $sql");
+      $dbh = mysql_query($sql);
+      $out = new stdClass();
+      $items = array();
+
+      while ($item = mysql_fetch_assoc($dbh)) {
+         $items[] = $item;   
+      }
+      $out->$tbl = $items;
+
+      return $out;
+   }
+
+ 
    function doLog($what) {
       file_put_contents("/tmp/ttw.log", $what."\n", FILE_APPEND | LOCK_EX);
    }
