@@ -9,13 +9,14 @@
          <table id="gameboard"></table>
       </div>
       <div id="buttonbar">
-         <div class='button' id='newgameButton'><img id='newgame' src='img/newgame.png' alt='New Game'><br><span class='label' id='newgameLabel'>New Game</span></div>
-         <div class='button' id='inviteButton'><img id='invite' src='img/invite.png' alt='Send a Game Invitation'><br><span class='label' id='inviteLabel'>Invite Friends</span></div>
-         <div class='button' id='requestsButton'><img id='requests' src='img/requests.png' alt='Game Requests'><br><span class='label' id='requestsLabel'>Game Requests</span></div>
-         <div class='button' id='gamesButton'><img id='games' src='img/games.png' alt='Your Current Games'><br><span class='label' id='gamesLabel'>Active Games</span></div>
-         <div class='button' id='settingsButton'><img id='settings' src='img/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
-         <div class='button' id='statsButton'><img id='stats' src='img/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
-         <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
+         <!--div class='button' id='newgameButton'><img id='newgame' src='img/newgame.png' alt='New Game'><br><span class='label' id='newgameLabel'>New Game</span></div-->
+         <!--div class='button' id='newgameButton'><img id='game' src='img/game.png' alt='Current Game'><br><span class='label' id='gameLabel'>Current Game</span></div-->
+         <div class='button' id='inviteButton'><img id='invite' src='img/btn/invite.png' alt='Send a Game Invitation'><br><span class='label' id='inviteLabel'>Invite Friends</span></div>
+         <div class='button' id='requestsButton'><img id='requests' src='img/btn/requests.png' alt='Game Requests'><br><span class='label' id='requestsLabel'>Game Requests</span></div>
+         <div class='button' id='gamesButton'><img id='games' src='img/btn/game.png' alt='Your Current Games'><br><span class='label' id='gamesLabel'>Active Games</span></div>
+         <div class='button' id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
+         <div class='button' id='statsButton'><img id='stats' src='img/btn/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
+         <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/btn/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
       </div>
       <div id='newgameOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('newgame',1)"><img src="img/close.png" class="closeImage"></a>
@@ -69,7 +70,8 @@
                games:{},
                game:{},
                players:[ {score:0,smallscore:0,tie:0,loss:0},{score:0,smallscore:0,draw:0,loss:0,tie:0} ],
-               overlay: {originX:500, originY:800}
+               overlay: {originX:500, originY:800},
+               lastGameCheck: 0
             },
             data: {
                players: {}
@@ -214,7 +216,7 @@
                });
                }
 
-               setTimeout(function() { tictac.nextPlayer(); }, 500);
+               setTimeout(function() { tictac.nextPlayer(); }, 50);
             },
             pickGame: function() {
                var picks = [];
@@ -763,7 +765,7 @@
                xmlhttp.send(JSON.stringify({"action":action, "data":data}));
  
             },
-            makeBadge: function(action, cnt) {
+            makeBadge: function(action, cnt, bounce) {
                var badge = $$(action + "Badge");
                if (!badge) {
                   badge = document.createElement("div");
@@ -967,6 +969,12 @@
             fetchPlayers: function(start=0, cnt=50) {
                tictac.exec("getPlayers", {"start":start,"cnt":cnt}, function(obj) {
                   tictac.fillPlayers(obj['players']);
+               });
+            },
+            checkGamesForMoves: function() {
+               var lastcheck = tictac.state.lastGameCheck;
+               tictac.exec("checkGames", {"id":tictac.state.me.id,"start":start,"cnt":cnt}, function(obj) {
+               
                });
             },
             getGames: function(start=0, cnt=50) {
