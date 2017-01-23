@@ -2,7 +2,8 @@
 @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
 body { background-color:#000; font-size:24px; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
 table { border-collapse:collapse; margin:0px auto; }
-#gameboard { font-weight: bold; background-color:#fff; margin:.25em; }
+#gameboard { font-weight: bold; background-color:#fff; margin:0; }
+table,td,tr,th,img { margin:0; padding:0; }
 .game_col0, .game_col1 {
    border-right: 1em solid black;
 }
@@ -59,7 +60,7 @@ th { background-color:#000; color:#0f0; }
 .OWINcell { background-color: rgba(0,100,255,.2); }
 #gameCount { text-align:left; padding-left: 1em; }
 .win { background-color: #0f0; }
-.winimage { position:absolute;top:0px;left:0px;height:100%; transition: opacity .3s ease-out; }
+.winimage { position:absolute;top:0px;left:0px;height:100%; transition: all 500ms cubic-bezier(0.18, 1.275, 0.425, 1.7); }
 .winimage:hover { opacity:.3; }
 #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
 #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
@@ -92,13 +93,12 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 #wrapper { 
    display:inline-block;
    margin:0px auto;
-   border: 1em solid #aaa;
+   border: .5em solid #aaa;
 }
 #winnerImage { 
-   transition: all 1s;
    z-index: 1000;
    position:absolute;
-   transition: all 1s cubic-bezier(0.18, 1.275, 0.425, 1.7) 10ms;
+   transition: all 1s cubic-bezier(0.18, 1.275, 0.425, 1.91) 10ms;
 }
 #p1 { min-height:100px; }
 #p2 { min-height:100px; }
@@ -120,18 +120,18 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
    border: .25em solid transparent;
 }
 #gameboard td > table.activeGame {
-   transform: scale(1.5);
+   transform: scale(1.4);
    background-color: #fff;
-   border: .25em solid #fff;
+   outline: .5em solid #ccc;
    position: relative;
    z-index: 999;
-   box-shadow: 0.25em 0.25em 0.25em rgba(0,0,0,.4);
+   box-shadow: 0.5em 0.5em 0.5em rgba(0,0,0,.8);
 }
 .mark {
-   transition: all 400ms cubic-bezier(0.18, 1.275, 0.425, 1.5) 400ms;
+   transition: all 400ms cubic-bezier(0.18, 1.275, 0.425, 1.5);
    width:40px;
    height:40px;
-   transform: scale(2);
+   transform: scale(0);
    opacity:0;
 }
 .marked {
@@ -143,9 +143,11 @@ select { width: 10em; }
    height:5em;
    width:5em;
    display:inline-block;
+   border-left:2px solid #000;
+   border-right:2px solid #000;
    position:relative;
    background-color:#888;
-   transition: all 500ms cubic-bezier(0.18, 1.1, 0.425, 1.3) 500ms;
+   transition: all 500ms cubic-bezier(0.18, 1.1, 0.425, 1.3) ;
    cursor: pointer;
    vertical-align:top;
    color:#ddd;
@@ -216,8 +218,18 @@ div.open {
    box-shadow: .25em .25em .25em rgba(0,0,0,.4);
    border-radius: 3em; 
    padding-top:0.35em;
-   transition: all 500ms cubic-bezier(0.18, 1.275, 0.425, 1.3);
+   transition: all 350ms cubic-bezier(0.47,-1.22, 0.58, 1.90);
    z-index:9999;
+}
+.bounce {
+ animation: bounce 2s infinite;
+}
+@keyframes bounce {
+ 0%,30%,50%,80%,100% {transform: translateY(0);}
+ 20% {transform: translateY(-30px);}
+ 40% {transform: translateY(-20px);}
+ 60% {transform: translateY(-10px);}
+ 65% {transform: translateY(0px);}
 }
 #newgameOverlay {
    height:362px;
@@ -370,3 +382,8 @@ h1, h2 { margin: 0px; }
    width:10em;
    height:14em;
 }
+#gameboard > tbody > tr { border-bottom: .8em solid black; }
+#gameboard > tbody > tr:last-child { border-bottom: .8em solid transparent; }
+#gameboard > tbody > tr > td { 
+   border-right: .8em solid black;
+}    
