@@ -389,12 +389,15 @@
          $them = ($player == 1) ? "X" : "O";
          
          $pick = pickMove($game['games'], $g, $me);
+         if ($pick) { doLog("[BOT MOVE] GOT PICK FOR WIN: $pick"); }
          if (!$pick) {
-            
+            doLog("[BOT MOVE] No winning moves. Looking for block...");
             $pick = pickMove($game['games'], $g, $them);
+            if ($pick) { doLog("[BOT MOVE] GOT PICK FOR BLOCK: $pick"); }
          }
 
          if (!$pick) {
+            doLog("[BOT MOVE] No blocking moves. Picking at random");
             $open = array();
             for ($r=0; $r<3; $r++) {
                for ($c=0; $c<3; $c++) {
