@@ -1,8 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Cabin');
+@import url('https://fonts.googleapis.com/css?family=Unkempt');
 @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
 body { background-color:#000; font-size:24px; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
 table { border-collapse:collapse; margin:0px auto; }
-#gameboard { font-weight: bold; background-color:#fff; margin:0; }
+#gameboard { font-weight: bold; background-color:#fff; margin:0; width:33em;}
 table,td,tr,th,img { margin:0; padding:0; }
 .game_col0, .game_col1 {
    border-right: 1em solid black;
@@ -134,6 +135,13 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
    transform: scale(0);
    opacity:0;
 }
+.bigMark {
+   transition: all 400ms cubic-bezier(0.18, 1.275, 0.425, 1.5);
+   width:5.6em;
+   height:5.6em;
+   transform: scale(0);
+   opacity:0;
+}
 .marked {
    transform: scale(1);
    opacity: 1;
@@ -153,7 +161,7 @@ select { width: 10em; }
    color:#ddd;
 }
 .button:hover {
-   background-color:#cc0;
+   background-color:#8bf;
    cursor: pointer;
 }
 .button img {
@@ -250,7 +258,7 @@ div.open {
 }
 button.yes { background-color: #0b0; color:#fff; }
 button.no { background-color: #b00; color: #fff; }
-.on { background-color:#08c; }
+div.on { background-color:#dd0; }
 span.label {
    display: inline-block;
    overflow: hidden;
@@ -334,7 +342,7 @@ table.players td button, table.game td button {
    box-shadow: 3px 3px 3px rgba(0,0,0,.5);
    font-weight: bold;
 }
-#gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper {
+#gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper, #invitesWrapper, #helpWrapper {
    overflow: scroll;
    height: 20.4em;
    background-color: rgba(255,255,255,.95);
@@ -386,4 +394,47 @@ h1, h2 { margin: 0px; }
 #gameboard > tbody > tr:last-child { border-bottom: .8em solid transparent; }
 #gameboard > tbody > tr > td { 
    border-right: .8em solid black;
-}    
+}
+input.toggle {
+   position: absolute;
+    margin-left: -9999px;
+    visibility: hidden;
+}
+input.toggle-round + label {
+  padding: 2px;
+  width: 120px;
+  height: 60px;
+  background-color: #dddddd;
+  border-radius: 60px;
+}
+input.toggle-round + label:before,
+input.toggle-round + label:after {
+  display: block;
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  bottom: 1px;
+  content: "";
+}
+input.toggle-round + label:before {
+  right: 1px;
+  background-color: #f1f1f1;
+  border-radius: 60px;
+  transition: background 0.4s;
+}
+input.toggle-round + label:after {
+  width: 58px;
+  background-color: #fff;
+  border-radius: 100%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: margin 0.4s;
+}
+input.toggle-round:checked + label:before {
+  background-color: #8ce196;
+}
+input.toggle-round:checked + label:after {
+  margin-left: 60px;
+}
+#settingsTable {
+   font-family:Unkempt;
+}
