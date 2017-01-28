@@ -1,0 +1,42 @@
+#buttonbar { position:fixed; bottom:1em; text-align:center; width:100%; }
+#currentGame { border-collapse:collapse; margin:.5em auto 0px auto; width:33em; background-color:#fff; outline:.5em solid #ccc; padding:.5em; }
+#currentGame td { height:7em; width:5.8em; }
+#currentGame td.row0, #currentGame td.row1 { border-bottom: .75em solid #000; }
+#currentGame td.col0, #currentGame td.col1 { border-right: .75em solid #000; }
+#currentWrapper { text-align: center; margin-top:2em;}
+#big03 { background-color:#000; }
+#gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper, #helpWrapper {
+   height:90%;
+}
+div.overlay { height:80%; background-color:rgba(0,100,255,.9); }
+#gamesWrapper table.game { height:auto; width: 600px; font-size:1.5em; }
+#gamesWrapper table.game td { vertical-align:middle; }
+#gamesWrapper td.playerCell { width: 5em; }
+.waiting {
+   display:inline-block;
+   padding: .5em 0;
+    cursor: pointer;
+    border-radius: 2em;
+    border: 4px solid #e88;
+    width: 8em;
+    color: #fff;
+    font-size: 1.2em;
+    text-shadow: 1px 1px 1px rgba(0,0,0,.5);
+    background-color: #a00;
+    text-transform: uppercase;
+    box-shadow: 3px 3px 3px rgba(0,0,0,.5);
+    font-weight: bold;
+    text-align:center;
+}
+.pickGame {
+  background-color:#6e8; 
+}
+#invitesWrapper { background-color:#fff; height:90%; }
+.button {
+   height:6em;
+   width:6em;
+}
+.button img {
+   height:6em;
+   width:6em;
+}

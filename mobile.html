@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Tic Tac Whoa!</title>
+      <link rel="stylesheet" type="text/css" href="default.css"/>
+      <link rel="stylesheet" type="text/css" href="mobile.css"/>
+   </head>
+   <body>
+      <div id="wrapper">
+         <table id="gameboard"></table><br>
+      </div>
+      <div id="currentWrapper">
+         <table class="game" id="currentGame">
+            <tbody>
+               <tr>
+                  <td id="big00" class="big cell row0 col0"></td>
+                  <td id="big01" class="big cell row0 col1"></td>
+                  <td id="big02" class="big cell row0 col2"></td>
+                  <td id="big03" class="big cell row0 col2" rowspan='3'></td>
+               </tr>
+               <tr>
+                  <td id="big10" class="big cell row1 col0"></td>
+                  <td id="big11" class="big cell row1 col1"></td>
+                  <td id="big12" class="big cell row1 col2"></td>
+               </tr>
+               <tr>
+                  <td id="big20" class="big cell row2 col0"></td>
+                  <td id="big21" class="big cell row2 col1"></td>
+                  <td id="big22" class="big cell row2 col2"></td>
+               </tr>
+            </tbody>
+         </table>
+      </div><br clear="both">
+      <div id="buttonbar">
+         <!--div class='button' id='newgameButton'><img id='newgame' src='img/newgame.png' alt='New Game'><br><span class='label' id='newgameLabel'>New Game</span></div-->
+         <!--div class='button' id='newgameButton'><img id='game' src='img/game.png' alt='Current Game'><br><span class='label' id='gameLabel'>Current Game</span></div-->
+         <div class='button' id='inviteButton'><img id='invite' src='img/btn/invite.png' alt='Send a Game Invitation'><br><span class='label' id='inviteLabel'>Invite Friends</span></div>
+         <div class='button' id='requestsButton'><img id='requests' src='img/btn/requests.png' alt='Game Requests'><br><span class='label' id='requestsLabel'>Game Requests</span></div>
+         <div class='button' id='gamesButton'><img id='games' src='img/btn/game.png' alt='Your Current Games'><br><span class='label' id='gamesLabel'>Active Games</span></div>
+         <div class='button' id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
+         <div class='button' id='statsButton'><img id='stats' src='img/btn/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
+         <div class='button' id='helpButton'><img id='help' src='img/btn/help.png' alt='Help'><br><span class='label' id='helpLabel'>Help</span></div>
+         <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/btn/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
+      </div>
+      <div id='newgameOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('newgame',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>New Game?</h1>
+         <p>Are you sure you want to quit your current game and start a new one? This cannot be undone.</p><br>
+         <button class='yes' onclick="tictac.init()">Yes, start a new game</button><button class='no' onclick="tictac.closeAllOverlays()">No, keep playing</button>
+      </div>
+      <div id='inviteOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('invite',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Invite a Friend</h1>
+         <div id="invitesWrapper"></div>
+      </div>
+      <div id='requestsOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#requests" onclick="return tictac.closeOverlay('requests',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Game Requests</h1>
+         <div id="requestsWrapper"></div>
+      </div>
+      <div id='gamesOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#games" onclick="return tictac.closeOverlay('games',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Active Games</h1>
+         <div id="gamesWrapper"></div>
+      </div>
+      <div id='settingsOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#settings" onclick="return tictac.closeOverlay('settings',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Settings</h1>
+      </div>
+      <div id='statsOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#stats" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Game Statistics</h1>
+      </div>
+      <div id='errorOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#error" onclick="return tictac.closeOverlay('error',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Sorry, you can't <br>do that (yet).</h1><br>
+         <p>You are trying to use features that are only available if we know who you are.  Click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) at the bottom-right of the screen 
+            and give approval to unlock all multiplayer features.  Tic-Tac-Whoa! only retrieves basic information such as your name and email address as
+            well as your friend list so you may invite friends to play one on one.</p>
+      </div>
+      <div id='fb-root'></div>
+   </body>
+   <script src='main.js'> </script>
+   <script src='mobile.js'> </script>
+   <script>
+   // Facebook login stuff
+   (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+
+   window.fbAsyncInit = function() {
+     FB.init({
+       appId      : '113717832467893',
+       cookie     : true,  // enable cookies to allow the server to access 
+                           // the session
+       xfbml      : true,  // parse social plugins on this page
+       version    : 'v2.8' // use graph api version 2.8
+     });
+   }
+   function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+   }
+
+   function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.dir(response);
+    if (response.status === 'connected') {
+      logLogin();
+    } else if (response.status === 'not_authorized') {
+      document.getElementById('status').innerHTML = 'Please log ' + 'into this app.';
+    } else {
+      document.getElementById('status').innerHTML = 'Please log ' + 'into Facebook.';
+    }
+   }
+
+   function logLogin() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me?fields=name,first_name,last_name,email,picture', function(response) {
+      console.log('Successful login for: ' + response.name);
+      var p = tictac.state.loggingInPlayer || 0;
+
+      // document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '! <img src="'+response.picture.data.url+'">';
+
+    });
+   }
+
+
+   </script>
+</html>
