@@ -1,8 +1,20 @@
+/**
+ * default.css - styles for the hit game Tic-Tac-Whoa!
+ *
+ * Palette:    #ffd000  Gold/Yellow
+ *             #01c5ff  Blue
+ *             #f72f49  Red
+ *             #000000  Black
+ *
+ **/
 @import url('https://fonts.googleapis.com/css?family=Cabin');
 @import url('https://fonts.googleapis.com/css?family=Unkempt');
 @import url('https://fonts.googleapis.com/css?family=Fontdiner+Swanky');
 body { background-color:#000; font-size:24px; font-family: 'Cabin', sans-serif; padding:0px; margin:0px; text-align:center; }
 table { border-collapse:collapse; margin:0px auto; }
+.yellowText { color:#ffdd00; }
+.blueText { color:#01c5ff; }
+.redText { color:#f72f49; }
 #gameboard { font-weight: bold; background-color:#fff; margin:0; width:33em;}
 table,td,tr,th,img { margin:0; padding:0; }
 .game_col0, .game_col1 {
@@ -365,6 +377,14 @@ table.players td button, table.game td button {
    padding: .25em 1em;
 }
 h1, h2 { margin: 0px; }
+h1.logo {
+   font-family: "Fontdiner Swanky";
+   color: #ff0;
+   font-size: 48px;
+   text-shadow: 2px 2px 3px rgba(0,0,0,.35);
+   -webkit-text-stroke: .15px rgba(0,0,0,.25);
+   line-height: 1.2;
+}
 .caps { text-transform: capitalize; }
 .left { text-align: left; }
 .waiting { text-transform:uppercase; font-weight:bold; font-size:1.1em; }
@@ -438,3 +458,120 @@ input.toggle-round:checked + label:after {
 #settingsTable {
    font-family:Unkempt;
 }
+div.bubble {
+   display:inline-block;
+   border-radius: 1em;
+   text-align:left;
+}
+.triangle-border {
+  position:relative;
+  padding:15px;
+  margin:1em 0 3em;
+  border:.25em solid #0088ee;
+  color:#333;
+  background:#fff;
+  /* css3 */
+  -webkit-border-radius:1em;
+  -moz-border-radius:1em;
+  border-radius:1em;
+  box-shadow: .125em .125em .125em rgba(0,0,0,.35);
+}
+.triangle-border.left {
+  margin-left:30px;
+}
+.triangle-border.right {
+  margin-right:30px;
+}
+.triangle-border:before {
+  content:"";
+  position:absolute;
+  bottom:-20px; /* value = - border-top-width - border-bottom-width */
+  left:40px; /* controls horizontal position */
+  border-width:20px 20px 0;
+  border-style:solid;
+  border-color:#0088ee transparent;
+  /* reduce the damage in FF3.0 */
+  display:block;
+  width:0;
+}
+
+/* creates the smaller  triangle */
+.triangle-border:after {
+  content:"";
+  position:absolute;
+  bottom:-12px; /* value = - border-top-width - border-bottom-width */
+  left:47px; /* value = (:before left) + (:before border-left) - (:after border-left) */
+  border-width:13px 13px 0;
+  border-style:solid;
+  border-color:#fff transparent;
+  /* reduce the damage in FF3.0 */
+  display:block;
+  width:0;
+}
+
+/* Variant : top
+------------------------------------------ */
+
+/* creates the larger triangle */
+.triangle-border.top:before {
+  top:-20px; /* value = - border-top-width - border-bottom-width */
+  bottom:auto;
+  left:auto;
+  right:40px; /* controls horizontal position */
+  border-width:0 20px 20px;
+}
+
+/* creates the smaller  triangle */
+.triangle-border.top:after {
+  top:-13px; /* value = - border-top-width - border-bottom-width */
+  bottom:auto;
+  left:auto;
+  right:47px; /* value = (:before right) + (:before border-right) - (:after border-right) */
+  border-width:0 13px 13px;
+}
+
+/* Variant : left
+------------------------------------------ */
+
+/* creates the larger triangle */
+.triangle-border.left:before {
+  top:10px; /* controls vertical position */
+  bottom:auto;
+  left:-30px; /* value = - border-left-width - border-right-width */
+  border-width:15px 30px 15px 0;
+  border-color:transparent #0088ee;
+}
+
+/* creates the smaller  triangle */
+.triangle-border.left:after {
+  top:16px; /* value = (:before top) + (:before border-top) - (:after border-top) */
+  bottom:auto;
+  left:-21px; /* value = - border-left-width - border-right-width */
+  border-width:9px 21px 9px 0;
+  border-color:transparent #fff;
+}
+
+/* Variant : right
+------------------------------------------ */
+
+/* creates the larger triangle */
+.triangle-border.right:before {
+  top:10px; /* controls vertical position */
+  bottom:auto;
+  left:auto;
+  right:-30px; /* value = - border-left-width - border-right-width */
+  border-width:15px 0 15px 30px;
+  border-color:transparent #0088ee;
+}
+
+/* creates the smaller  triangle */
+.triangle-border.right:after {
+  top:16px; /* value = (:before top) + (:before border-top) - (:after border-top) */
+  bottom:auto;
+  left:auto;
+  right:-21px; /* value = - border-left-width - border-right-width */
+  border-width:9px 0 9px 21px;
+  border-color:transparent #fff;
+}
+
+

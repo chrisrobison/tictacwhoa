@@ -135,11 +135,13 @@
          return false;
       },
       move: function(spot, player, noReport=false) {
-         if (!spot) {
+         if (!spot || spot.length<8) {
+            console.log("[move] Invalid or missing move space: "+spot);
             return false;
          }
 
          if (tictac.state.symbols[tictac.state.currentPlayer]!=player) {
+            console.log("[move] Not player '"+player+"' turn (should be "+tictac.state.symbols[tictac.state.currentPlayer]+")");
             return false;
          }
          
@@ -147,10 +149,12 @@
              gameInfo = spot.match(/game(\d\d)(\d\d)/);
    
          if ((!gameInfo[1]) || (gameInfo[1] != tictac.state.currentGame) && (tictac.state.currentGame!="")) {
+            console.log("[move] Attempt to make move on inactive game: " + gameInfo[1] + " (should be " + tictac.state.currentGame +")");
             return false;
          }
          
          if (tictac.state.games["game"+gameInfo[1]][spot]!="") {
+            console.log("[move] Attempt to make move on already occupied space: " + tictac.state.games["game"+gameInfo[1]][spot] + " (game: game"+gameInfo[1]+", spot: "+spot+")");
             return false;
          }
 
@@ -413,7 +417,7 @@
                var cell = $$("big"+r+""+c);
                cell.innerHTML = "";
                var out = "";
-               if (cg["game"+tictac.state.currentGame+""+r+""+c]) {
+               if (cg && cg["game"+tictac.state.currentGame+""+r+""+c]) {
                   out = document.createElement("img");
                   out.src = "img/"+cg["game"+tictac.state.currentGame+""+r+""+c]+".png";
                   out.classList.add('bigMark');
@@ -501,12 +505,26 @@
          }
          return container;   
       },
-      checkGames: function() {
+      updateGame: function() {
          var snapshot = [];
          for (var r=0; r<3; r++) {
             for (var c=0; c<3; c++) {
-               if (tictac.state.game[r+""+c]=="") {
-                  tictac.state.game[r+""+c] = tictac.checkGame(r + "" + c);
+               tictac.state.game[r+""+c] = tictac.checkGame(r + "" + c);
+            }
+         }
+      },
+      checkGames: function(dowin=true) {
+         var snapshot = [];
+         for (var r=0; r<3; r++) {
+            for (var c=0; c<3; c++) {
+               var results = tictac.checkGame(r + "" + c);
+               if (tictac.state.game[r+""+c] != results.winner) {
+                  tictac.state.game[r+""+c] = results.winner;
+                  if (results.winner == "-") {
+                     tictac.doDraw(r + "" + c);
+                  } else if (results.winner!="") {
+                     tictac.doWin(results.spots, results.winner);
+                  }
                }
             }
          }
@@ -516,19 +534,19 @@
             tictac.disableAll();
          }
       },
-      checkGame: function(game) {
-         var win = false, winner="";
+      checkGame: function(game, dowin=true) {
+         var win = false, winner="", winners=[];
 
          var rgame = tictac.state.games["game"+game];
          var id = "game"+game;
 
-         if (tictac.state.game[game]=="") {
+//         if (tictac.state.game[game]=="") {
             // Check for diagnal wins
             if ((rgame[id+"00"]!="") && 
                   ((rgame[id+"00"] == rgame[id+"11"]) && 
                      (rgame[id+"00"] == rgame[id+"22"]))) {
                winner = rgame[id+"00"];
-               tictac.doWin([id+"00", id+"11", id+"22"], winner);
+               winners = [id+"00", id+"11", id+"22"];
                win = true;
             }
             if ((rgame[id+"02"]!="") && 
@@ -536,7 +554,7 @@
                      (rgame[id+"02"] == rgame[id+"20"]))) {
                win = true;
                winner = rgame[id+"02"];
-               tictac.doWin([id+"02", id+"11", id+"20"], winner);
+               winners = [id+"02", id+"11", id+"20"];
             }
             
             // Check for wins by row and by column
@@ -547,7 +565,7 @@
                    (rgame[id+"0"] == rgame[id+"2"]))) {
                   win = true;
                   winner = rgame[id+"0"];
-                  tictac.doWin([id+"0", id+"1", id+"2"], winner);
+                  winners = [id+"0", id+"1", id+"2"];
                }
                
                id = "game"+game;
@@ -556,8 +574,12 @@
                    (rgame[id+"0"+r] == rgame[id+"2"+r]))) {
                   win = true;
                   winner = rgame[id+"0"+r];
-                  tictac.doWin([id+"0"+r, id+"1"+r, id+"2"+r], winner);
+                  winners = [id+"0"+r, id+"1"+r, id+"2"+r];
                }
+            }
+            
+            if (dowin && win) {
+               // tictac.doWin(winners, winner);
             }
 
             var space = 0;
@@ -568,13 +590,14 @@
             }
             if ((space==0) && (!winner)) {
                console.log("Sub-game DRAW: " + game);
-               tictac.doDraw(game);
+               // tictac.doDraw(game);
                winner = "-";
+               win = true;
                $$("container"+game).classList.add("DRAW");
                $$("container"+game).classList.add("disabled");
             }
-         }
-         return winner;
+         // }
+         return { winner: winner, spots: winners, win: win };
       },
       checkWin: function() {
          var win = false, winner="";
@@ -751,9 +774,11 @@
             setTimeout(function() { tictac.init(); }, 5000);
          }
       },
-      doWin: function(cells,winner) {
+      doWin: function(cells,winner,sound=true) {
          var pidx = tictac.getPlayerIdx(winner);
          var lidx = pidx^1;
+         var loser = (winner=="X") ? "O" : "X";
+
          tictac.state.players[pidx].smallscore++;
          tictac.state.players[lidx].loss++;
 
@@ -761,25 +786,31 @@
          
          for (var cell in cells) {
             $$(cells[cell]).classList.add(winner+"WINcell");
+            $$(cells[cell]).classList.remove(loser+"WINcell");
          }
          var g = cells[0].match(/game(\d\d)(\d\d)/)[1];
          $$("container"+g).classList.add(winner+"WIN");
+         $$("container"+g).classList.remove(loser+"WIN");
          
-         if (!$$("img"+g)) {
+         var winImage = $$("img"+g);
+         if (!winImage) {
             var winImage = document.createElement("img");
-            winImage.src = "img/" + winner + ".png";
             winImage.id = "img"+g;
             winImage.className = "winimage";
             winImage.style.transform = "scale(0)";
-
             $$("container"+g).appendChild(winImage);
-            setTimeout(function() {
-               winImage.style.transform = "scale(1)";
-               console.log("win"+winner);
-               tictac.sounds['win'+winner].play();
-            }, 50);
+
          }
-      },
+         winImage.style.transform = "scale(0)";
+         winImage.src = "img/" + winner + ".png";
+         setTimeout(function() {
+            winImage.style.transform = "scale(1)";
+            console.log("win"+winner);
+            if (sound) {
+               tictac.sounds['win'+winner].play();
+            }
+         }, 100);
+       },
       doDraw: function(game) {
          tictac.state.players[0].tie++;
          tictac.state.players[1].tie++;
@@ -1315,6 +1346,29 @@
             winline.parentNode.removeChild(winline);
          }
       },
+      updateBigGame: function(sound=true) {
+         var game = tictac.state.game;
+         for (let g in game) {
+            var winner = game[g] || "";
+
+            if (winner) {
+               $$("container"+g).classList.add(winner+"WIN");
+               var winImage = $$("img"+g); 
+               if (!winImage) {
+                  var winImage = document.createElement("img");
+                  winImage.id = "img"+g;
+                  winImage.className = "winimage";
+
+                  $$("container"+g).appendChild(winImage);
+                  // winImage.style.transform = "scale(1)";
+                  
+               }
+               winImage.style.transform = "scale(0)";
+               winImage.src = "img/" + winner + ".png";
+               tictac.setNormal(winImage, 50, winner, sound);
+            } 
+         }      
+      },
       loadGame: function(game, games) {
          tictac.clearWinline();
          tictac.state.game = game;
@@ -1339,32 +1393,14 @@
                }
             }
          }
-         for (var g in game) {
-//TODO: Add images for main game filled spots
-            var winner = game[g];
-
-            if (game[g] != "") {
-               $$("container"+g).classList.add(winner+"WIN");
-               
-               if (!$$("img"+g)) {
-                  var winImage = document.createElement("img");
-                  winImage.src = "img/" + winner + ".png";
-                  winImage.id = "img"+g;
-                  winImage.className = "winimage";
-                  winImage.style.transform = "scale(0)";
-
-                  $$("container"+g).appendChild(winImage);
-                  tictac.setNormal(winImage, 50, winner);
-                  // winImage.style.transform = "scale(1)";
-                  console.log("win"+winner);
-                  
-               }
-            } 
-         }
          tictac.checkGames();
+         tictac.updateBigGame(false);
          tictac.checkWin();
+         if (tictac.mobile) {
+            tictac.fillBig();
+         }
       },
-      setNormal: function(el, delay, winner) {
+      setNormal: function(el, delay, winner, play=true) {
          setTimeout(function() { el.style.transform = "scale(1)"; tictac.sounds['win'+winner].play(); }, delay);
       },
       saveGame: function() {
