@@ -680,5 +680,7 @@ div.bubble {
    display:inline-block;
    height:600px;
    width:600px;
-   position:relative;
+   position:absolute;
+   z-index:99999;
 }
+

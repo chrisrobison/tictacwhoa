@@ -75,8 +75,10 @@ h1 {
 #spotlight { 
    position:absolute; 
    z-index: 9998;
-   transition: height 300ms;
-   height:0;
+   transition: all 500ms;
+   display:inline-block;
+   overflow:hidden;
+   height:0px;
 }
 #spotlight.s00 { top:62px; left:-10px;  width:588px; height:605px; }
 #spotlight.s01 { top:62px; left:-10px;  width:592px; height:600px; }

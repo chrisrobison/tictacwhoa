@@ -32,6 +32,9 @@
       init: function() {
          tictac.state.gameCount++;
          tictac.initSounds();
+         $$("spinner").style.left = (window.innerWidth / 2) - 370 + "px";
+         $$("spinner").style.top = (window.innerHeight / 2) - 0 + "px";
+         $$("spinner").style.display = "none";
 
          for (var r=0; r<3; r++) {
             for (var c=0; c<3; c++) {
@@ -74,6 +77,8 @@
          tictac.clearDisabled();
          tictac.disableAll();
          tictac.clearActive();
+               $$("spotlight").style.height = "0";
+               $$("spotlight").classList.add("s11");
 
          setTimeout(function() {
             tictac.makeActive(tictac.state.currentGame);
@@ -400,24 +405,23 @@
          } else {
             tictac.state.currentGame="";
             tictac.clearDisabled();
-            $$("spotlight").style.display = "none";
+            $$("spotlight").style.height = "0";
          }
 
          var win = tictac.checkWin();
          if (tictac.state.currentGame && !win) {
             if (tictac.state.lastGame == tictac.state.currentGame) {
-               $$("spotlight").style.height = "0px";
+               $$("spotlight").style.height = "0";
                setTimeout(function() { tictac.makeActive(tictac.state.currentGame); }, 750);
             } else {
                tictac.makeActive(tictac.state.currentGame);
             }
-            /*
-            $$('game' + tictac.state.currentGame).classList.add("activeGame");
-            $$('game' + tictac.state.currentGame).parentNode.classList.remove("disabled");
-            $$('game' + tictac.state.currentGame).classList.remove(tictac.state.opponentSymbol());
-            $$('game' + tictac.state.currentGame).classList.add(tictac.state.currentSymbol());
-            */
             // if (tictac.mobile) tictac.fillBig();
+         }
+         if (tictac.state.currentSymbol() == tictac.state.me.mymark) {
+            $$("spinner").style.display = "none";
+         } else {
+            $$("spinner").style.display = "inline-block";
          }
          if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
             setTimeout(function() { tictac.automove(); }, 1250);
@@ -1505,10 +1509,10 @@
          $$('game' + who).classList.remove(tictac.state.opponentSymbol());
          $$('game' + who).parentNode.classList.remove("disabled");
          
-         $$("spotlight").style.height = "0px";
-         $$("spotlight").src = "img/spotlights/"+who+".png";
-         $$("spotlight").className = "s"+who;
-         $$("spotlight").style.height = "auto";
+         $$("spotlight").style.height = "0";
+         $$("spotlightImg").src = "img/spotlights/"+who+".png";
+         $$("spotlightImg").className = "s"+who;
+         $$("spotlight").style.height = "100%";
          $$("spotlight").style.display = "inline-block";
       },
       invite: function(id) {
