@@ -53,7 +53,7 @@
          break;
        case "getGames":
          if ($in->data->id) {
-            $sql = "select * from game where (player1_id='".$in->data->id."' or player2_id='".$in->data->id."') and state!='complete'";
+            $sql = "select * from game where (player1_id='".$in->data->id."' or player2_id='".$in->data->id."') and state!='complete' and draw=false";
             //doLog("[getGames] $sql");
 
             $result = mysql_query($sql);
@@ -251,7 +251,17 @@
             $out = getRecord('game', $in->data->game_id);
          }
          break;
-   }
+        
+      case "draw":
+         if ($in->data->winner && $in->data->game_id) {
+            $sql = "update game set winner='{$in->data->winner}', game='{$in->data->game}', state='complete', draw=true where id='{$in->data->game_id}'";
+            doLog("[DRAW] $sql");
+            $result = mysql_query($sql);
+            
+            $out = getRecord('game', $in->data->game_id);
+         }
+         break;
+ }
    
    function makeInsert($table, $fields, $data) {
       $out = "INSERT INTO $table (" . implode($fields, ", ") .") VALUES ";
@@ -322,23 +332,24 @@
    }
 
    function pickMove($game, $g, $me) {
-      doLog("[pickMove] game: ".print_r($game, true)." g: $g   me: $me");
+      doLog("=============================\n[pickMove] game: ".print_r($game, true)." g: $g   me: $me");
+      $out = "";
       for ($r=0; $r<3; $r++) {
          doLog("[pickMove] Checking row $r ...{$g}{$r}0: ".$game["{$g}{$r}0"]."  {$g}{$r}1: ".$game["{$g}{$r}1"]."  {$g}{$r}2: ".$game["{$g}{$r}2"]);
          if ($game["$g{$r}0"] == $me) {
             if (($game["$g{$r}1"]==$me) && ($game["$g{$r}2"]=="")) {
-               return "$g{$r}2";
+               $out =  "$g{$r}2";
             }
             if (($game[$g.$r."1"]=="") && ($game["$g{$r}2"]==$me)) {
-               return $g.$r."1";
+               $out =  $g.$r."1";
             }
          }
          if ($game[$g.$r."1"] == $me) {
             if (($game[$g.$r."0"]=="") && ($game[$g.$r."2"]==$me)) {
-               return $g.$r."0";
+               $out =  $g.$r."0";
             }
             if (($game[$g.$r."0"]==$me) && ($game[$g.$r."2"]=="")) {
-               return $g.$r."2";
+               $out =  $g.$r."2";
             }
          }
       }
@@ -347,43 +358,47 @@
          doLog("[pickMove] Checking col $c ...{$g}0{$c}: ".$game["{$g}0{$c}"]."  {$g}1{$c}: ".$game["{$g}1{$c}"]."  {$g}2{$c}: ".$game["{$g}2{$c}"]);
          if ($game["{$g}0{$c}"] == $me) {
             if (($game["{$g}1{$c}"]==$me) && ($game["{$g}2{$c}"]=="")) {
-               return $g."2".$c;
+               $out =  $g."2".$c;
             }
             if (($game[$g."1".$c]=="") && ($game[$g."2".$c]==$me)) {
-               return $g."1".$c;
+               $out =  $g."1".$c;
             }
         }
         if ($game[$g."1".$c] == $me) {
             if (($game[$g."0".$c]=="") && ($game[$g."2".$c]==$me)) {
-               return $g."0".$c;
+               $out =  $g."0".$c;
             }
             if (($game[$g."0".$c]==$me) && ($game[$g."2".$c]=="")) {
-               return $g."2".$c;
+               $out =  $g."2".$c;
             }
          }
       }
 
       if (($game[$g."00"]==$me) && ($game[$g."11"]==$me) && ($game[$g."22"]=="")) {
-         return $g."22";
+         $out =  $g."22";
       }
       if (($game[$g."00"]==$me) && ($game[$g."11"]=="") && ($game[$g."22"]==$me)) {
-         return $g."11";
+         $out =  $g."11";
       }
       if (($game[$g."00"]=="") && ($game[$g."11"]==$me) && ($game[$g."22"]==$me)) {
-         return $g."00";
+         $out =  $g."00";
       }
 
       if (($game[$g."02"]==$me) && ($game[$g."11"]==$me) && ($game[$g."20"]=="")) {
-         return $g."20";
+         $out =  $g."20";
       }
       if (($game[$g."02"]==$me) && ($game[$g."11"]=="") && ($game[$g."20"]==$me)) {
-         return $g."11";
+         $out =  $g."11";
       }
       if (($game[$g."02"]=="") && ($game[$g."11"]==$me) && ($game[$g."20"]==$me)) {
-         return $g."02";
+         $out =  $g."02";
       }
-      
-      return "";
+      if ($out) {
+         doLog("Picked $out");
+      } else {
+         doLog("No pick made.");
+      }
+      return $out;
    }
    
    function encodeGames($games) {
@@ -451,6 +466,23 @@
       return $game;
    }
    
+   function pickRandom($game) {
+      $avail = array();
+      $out = "";
+
+      foreach ($game as $id=>$val) {
+         if ($val=="") {
+            $avail[] = $id;
+         }
+      }
+      if (count($avail)) {
+         $out = $avail[rand(0, count($avail)-1)];
+      } else {
+         $out = "-";
+      }
+      return $out;
+   }
+
    function automove($game_id, $player, $g) {
       $mygame = getRecord('game', $game_id);
       $opponent = getRecord('player', $mygame["player".(($player^1)+1)."_id"]);
@@ -470,10 +502,23 @@
             doLog("[BOT MOVE] gid: $gid");
          }
          
+         $game['game'] = syncGames($game['games']);
+
          doLog("[BOT MOVE] Game state: ".print_r($game['game'], true));
          if ($game['game'][$gid]!="") {   
             doLog("[BOT MOVE] Current game already won. Picking new game to play within...");
             $gid = pickMove($game['game'], "", $me);
+            if (!$gid) {
+               $gid = pickMove($game['game'], "", $them);
+               
+               if (!$gid) {
+                  $gid = pickRandom($game['game']);
+               }
+            }
+            if (!$gid) {
+               doLog("[BOT MOVE] Looks like a DRAW. Not making any moves.");
+               return false;
+            }
             $g = "game$gid";
             doLog("[BOT MOVE] New current game: $g");
          }
@@ -505,7 +550,7 @@
 
          if ($pick) {
             $game["games"][$g][$pick] = $them;
-            doLog("[BOT MOVE] encoded: " . print_r($mygame['game'], true). " decoded: " . print_r($game, true));
+            // doLog("[BOT MOVE] encoded: " . print_r($mygame['game'], true). " decoded: " . print_r($game, true));
             $botmove = "insert into move (id, game_id, player, player_id, for_player_id, move, mark, moved, created, seen) values (null, '{$game_id}', '".($player^1)."', '{$opponent['id']}', '".($mygame['player'.($player+1).'_id'])."', '{$pick}', '$them', now(), now(), 0)";
             mysql_query($botmove);
             doLog("[BOT MOVE] $botmove");
@@ -516,7 +561,20 @@
          }
       }
    }
-  
+   
+   function syncGames($games) {
+      $out = array();
+
+      for ($r=0; $r<3; $r++) {
+         for ($c=0; $c<3; $c++) {
+            $g = "game{$r}{$c}";
+            $out[$r.$c] = checkWin($games[$g], $g);
+         }
+      }
+      console.log("[SYNC GAMES] Game state: ".print_r($out, true));
+      return $out;
+   }
+
    function checkWin($game, $g) {
       $winner="";
 
@@ -525,9 +583,11 @@
       // Check for diagnal wins
       if (($game["{$g}00"]!="") && (($game["{$g}00"] == $game["{$g}11"]) && ($game["{$g}00"] == $game["{$g}22"]))) {
          $winner = $game["{$g}00"];
+         doLog("[checkWin] Won diagnol for " . $game[$g."00"] . "  game: $g  spots: 00/11/22");
       }
       if (($game["{$g}02"]!="") && (($game["{$g}02"] == $game["{$g}11"]) && ($game["{$g}02"] == $game["{$g}20"]))) {
          $winner = $game["{$g}02"];
+         doLog("[checkWin] Won diagnol for " . $game[$g."02"] . "  game: $g  spots: 02/11/20");
       }
       
       // Check for wins by row and by column
@@ -537,14 +597,17 @@
             (($game[$g.$id."0"] == $game[$g.$id."1"]) && 
              ($game[$g.$id."0"] == $game[$g.$id."2"]))) {
             $winner = $game[$g.$id."0"];
-            doLog("[checkWin] Won across for " . $game[$g.$id."0"]);
+            doLog("[checkWin] Won across for " . $game[$g.$id."0"] . "  game: $g  spots: {$id}0/{$id}1/{$id}2");
          }
-         
-         if (($game["{$g}0".id]!="") && 
-            (($game["{$g}0".id] == $game["{$g}1".id]) && 
-             ($game["{$g}0".id] == $game["{$g}2".id]))) {
+      }
+      
+      for ($c=0; $c<3; $c++) {
+         $id = $c;
+         if (($game["{$g}0".$id]!="") && 
+            (($game["{$g}0".$id] == $game["{$g}1".$id]) && 
+             ($game["{$g}0".$id] == $game["{$g}2".$id]))) {
             $winner = $game["{$g}0".$id];
-            doLog("Won down for " . $game["{$g}0".$id]." [id: 0".$id."]");
+            doLog("[checkWin] Won down for " . $game[$g.$id."0"] . "  game: $g  spots: {$id}0/{$id}1/{$id}2");
          }
       }
 
@@ -582,7 +645,7 @@
 
          $fields = array('player1_id', 'player2_id', 'player_up', 'game', 'created');
          if (!$data->game) {
-            $data->game = mysql_real_escape_string(json_encode(genBoard()));
+            $data->game = encodeGames(genBoard());
          }
          $sql = makeInsert("game", $fields, $data);
          doLog("[START] $sql");
@@ -616,7 +679,8 @@
       }
       $out["game"] = $game;
       $out["games"] = $games;
-      return $out;
+
+      return encodeGames($out);
    }
 
    function doLog($what) {

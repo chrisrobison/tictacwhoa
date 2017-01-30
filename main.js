@@ -8,6 +8,7 @@
          currentPlayer: 1,
          currentGame: "11",
          currentSymbol: function() { return ['X', 'O'][tictac.state.currentPlayer]; },
+         opponentSymbol: function() { return ['O', 'X'][tictac.state.currentPlayer]; },
          games:{},
          game:{},
          players:[ {score:0,smallscore:0,tie:0,loss:0},{score:0,smallscore:0,draw:0,loss:0,tie:0} ],
@@ -73,8 +74,11 @@
          tictac.clearDisabled();
          tictac.disableAll();
          tictac.clearActive();
-         $$('game' + tictac.state.currentGame).classList.add("activeGame");
-         
+
+         setTimeout(function() {
+            tictac.makeActive(tictac.state.currentGame);
+         }, 1000);
+
          var winimage = $$("winnerImage");
          if (winimage) {
             winimage.parentNode.removeChild(winimage);
@@ -176,16 +180,20 @@
          tgt.classList.add(player);
          
          if (tictac.mobile) {
-            var bm = mark.cloneNode();
+         /*
+         var bm = mark.cloneNode();
             bm.classList.remove('mark');
             bm.classList.add('bigMark');
             $$("big"+gameInfo[2]).appendChild(bm);
             setTimeout(function() { 
                bm.classList.add("marked"); 
             }, 150);
-          }
+         */
+         }
          // Log player move 
          tictac.state.games["game"+tictac.state.currentGame][spot] = player;
+         tictac.state.lastGame = tictac.state.currentGame;
+         tictac.state.lastMove = spot;
          tictac.state.currentGame = gameInfo[2];
          
          if ((tictac.player[0]!='Computer' && tictac.player[1]!='Computer') && (!noReport)) {
@@ -371,9 +379,9 @@
          }
       },
       switchPlayer: function() {
-         $$("wrapper").classList.remove(tictac.state.currentSymbol()+"cursor");
+         //$$("wrapper").classList.remove(tictac.state.currentSymbol()+"cursor");
          tictac.state.currentPlayer ^= 1;
-         $$("wrapper").classList.add(tictac.state.currentSymbol()+"cursor");
+         // $$("wrapper").classList.add(tictac.state.currentSymbol()+"cursor");
          
          $$('currentPlayer').innerHTML = tictac.state.currentSymbol();
       },
@@ -392,14 +400,24 @@
          } else {
             tictac.state.currentGame="";
             tictac.clearDisabled();
+            $$("spotlight").style.display = "none";
          }
 
          var win = tictac.checkWin();
          if (tictac.state.currentGame && !win) {
-            $$('game' + tictac.state.currentGame).classList.add("activeGame");
-            if (tictac.mobile) {
-               tictac.fillBig();
+            if (tictac.state.lastGame == tictac.state.currentGame) {
+               $$("spotlight").style.height = "0px";
+               setTimeout(function() { tictac.makeActive(tictac.state.currentGame); }, 750);
+            } else {
+               tictac.makeActive(tictac.state.currentGame);
             }
+            /*
+            $$('game' + tictac.state.currentGame).classList.add("activeGame");
+            $$('game' + tictac.state.currentGame).parentNode.classList.remove("disabled");
+            $$('game' + tictac.state.currentGame).classList.remove(tictac.state.opponentSymbol());
+            $$('game' + tictac.state.currentGame).classList.add(tictac.state.currentSymbol());
+            */
+            // if (tictac.mobile) tictac.fillBig();
          }
          if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
             setTimeout(function() { tictac.automove(); }, 1250);
@@ -770,7 +788,10 @@
             var img = $$("winnerImage");
             img.style.opacity = 0;
          }, 3000);
-          if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
+         
+         tictac.exec("draw", {game_id: tictac.state.game_id, winner: "-", game: tictac.encodeGames() });
+         
+         if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
             setTimeout(function() { tictac.init(); }, 5000);
          }
       },
@@ -986,9 +1007,9 @@
                tmp += '<td><h2>vs.</h2></td>';
                tmp += '<td class="playerCell"><img src="'+opponent['photo']+'" class="profilePic"><br>' + opponent['player'] + '</td>';
                // tmp += '<td style="text-align:right"><b>Started:</b></td><td>' + tictac.formatDate(game.created) + '</td>';
-               tmp += '<td style="text-align:center;font-size:.9em;">';
+               tmp += '<td style="line-height:1;text-align:center;font-size:.9em;">';
                tmp += (game.player_up==0) ? '<button onclick="tictac.play(' + game['id'] + ')">Play</button>' : '<span class="waiting">Waiting</span>';
-               tmp += '<br><b>Moved:</b> <span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr></table></div>'
+               tmp += '<br><br><b>Moved:</b> <span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr></table></div>'
                
                if (game.player_up==0) {
                   myturn += tmp;
@@ -1002,9 +1023,9 @@
                tmp += '<td><h2>vs.</h2></td>';
                tmp += '<td class="playerCell"><img src="'+tictac.state.players[0]['photo']+'" class="profilePic"><br>' + tictac.state.players[0]['player'] + '</td>';
                //tmp += '<td style="text-align:right"><b>Started:</b></td><td colspan="2">' + tictac.formatDate(game.created) + '</td></tr>';
-               tmp += '<td style="text-align:center;font-size:.9em;">';
+               tmp += '<td style="line-height:1;text-align:center;font-size:.9em;">';
                tmp += (game.player_up==1) ? '<button onclick="tictac.play(' + game['id'] + ')">Play</button>' : '<span class="waiting">Waiting</span>';
-               tmp += '<br><b>Moved:</b> <span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr></table></div>'
+               tmp += '<br><br><b>Moved:</b> <span class="caps">' + tictac.dateDuration(game.last_moved, "now") + '</span></td></tr></table></div>'
            
                if (game.player_up==1) {
                   myturn += tmp;
@@ -1018,17 +1039,26 @@
          tictac.makeBadge('games', imup);
          $$("gamesWrapper").innerHTML = out;
       },
-      dateDuration: function(start, end) {
+      dateDuration: function(start="now", end="now") {
          if (start=="now") {
             start = Date().toString();
          }
          if (end=="now") {
             end = Date().toString();
          }
-            
+         
          var t1 = Date.parse(start) / 1000;
          var t2 = Date.parse(end) / 1000;
+         
+         if (start.match(/(\d\d\d\d)\-(\d\d)\-(\d\d)\s(\d+):(\d+):(\d+)/)) {
+            start = start.replace(/\s/, 'T');
+            t1 = (Date.parse(start) / 1000) + 28800;
+         }
 
+         if (end.match(/(\d\d\d\d)\-(\d\d)\-(\d\d)\s(\d+):(\d+):(\d+)/)) {
+            end = start.replace(/\s/, 'T');
+            t2 = (Date.parse(start) / 1000) + 28800;
+         }
          var out = "";
          if (!isNaN(t1) && !isNaN(t2)) {
             var secs = t2 - t1;
@@ -1202,7 +1232,9 @@
             } else {
                olay.style.height = (action=="newgame") ? "70%" : "80%";
             }
-            olay.style.width = "750px";
+            olay.style.minWidth = "750px";
+            olay.style.maxWidth = (window.innerWidth-20)+"px";
+
             olay.style.top = "28px";
             olay.style.borderWidth = ".5em";
             olay.style.left = ((window.innerWidth / 2) - 375) + "px";
@@ -1443,29 +1475,41 @@
             tictac.clearActive();
             
             if (obj.last_move) {
-               var parts = obj.last_move.match(/game(\d\d)(\d\d)/);
-               tictac.state.currentGame = parts[2];
-               if (tictac.mobile) {
-                  tictac.fillBig();
+               var parts;
+               if (parts = obj.last_move.match(/game(\d\d)(\d\d)/)) {
+                  tictac.state.currentGame = parts[2];
+                  // if (tictac.mobile) tictac.fillBig();
                }
             }
 
             if (tictac.state.currentGame) {
-               $$('game' + tictac.state.currentGame).classList.add("activeGame");
+               if (tictac.state.game[tictac.state.currentGame]=="") {
+                  tictac.makeActive(tictac.state.currentGame);
+               } else {
+                  tictac.state.currentGame="";
+                  tictac.clearDisabled();
+               }
             }
-            if (tictac.state.game[tictac.state.currentGame]=="") {
-               $$('container' + tictac.state.currentGame).classList.remove("disabled");
-            } else {
-               tictac.state.currentGame="";
-               tictac.clearDisabled();
-            }
-            
+           
             if (tictac.state.players[tictac.state.currentPlayer].id != tictac.state.me.id) {
                tictac.checkForMoves();
             }
 
          });
           
+      },
+      makeActive: function(who) {
+         $$('container' + who).classList.remove("disabled");
+         $$('game' + who).classList.add("activeGame");
+         $$('game' + who).classList.add(tictac.state.currentSymbol());
+         $$('game' + who).classList.remove(tictac.state.opponentSymbol());
+         $$('game' + who).parentNode.classList.remove("disabled");
+         
+         $$("spotlight").style.height = "0px";
+         $$("spotlight").src = "img/spotlights/"+who+".png";
+         $$("spotlight").className = "s"+who;
+         $$("spotlight").style.height = "auto";
+         $$("spotlight").style.display = "inline-block";
       },
       invite: function(id) {
          tictac.exec('invite', {player1_id: tictac.state.me.id, player2_id: id}, function(obj) {

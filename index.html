@@ -52,18 +52,24 @@
       <div id='statsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Statistics</h1>
+         <div id='statsWrapper'>
+         </div>
       </div>
       <div id='helpOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('help',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Tic-Tac-Whoa!<br>Help</h1>
+         <div id='helpWrapper'>
+         </div>
       </div>
 
       <div id='errorOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#error" onclick="return tictac.closeOverlay('error',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Sorry, you can't <br>do that (yet).</h1><br>
-         <p style='text-align:left;'>You are trying to use features that are only available if you are logged in.  To login using Facebook, click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) 
+         <div id='errorWrapper'>
+            <p style='text-align:left;'>You are trying to use features that are only available if you are logged in.  To login using Facebook, click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) 
             and give approval to unlock all multiplayer features.  Tic-Tac-Whoa! only retrieves basic information such as your name and email address as
             well as your friend list so you may invite friends to play one-on-one.</p>
+         </div>
       </div>
       <div id='fb-root'></div>
    </body>

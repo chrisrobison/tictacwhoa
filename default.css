@@ -66,7 +66,7 @@ td.cell.filled:hover {
 
 th { background-color:#000; color:#0f0; }
 #currentPlayer { height:2em; }   
-.disabled { background-color: rgba(0,0,0,.5); cursor: url(img/no.png), auto; }
+.disabled { background-color: rgba(0,0,0,.35);  }
 .XWIN { background-color:#333; }
 .OWIN { background-color:#333; }
 .XWINcell { background-color: rgba(230,230,0,.2); }
@@ -105,6 +105,7 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 }
 #wrapper { 
    display:inline-block;
+   position:relative;
    margin:0px auto;
    border: .5em solid #aaa;
 }
@@ -135,10 +136,16 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 #gameboard td > table.activeGame {
    transform: scale(1.4);
    background-color: #fff;
-   outline: .5em solid #ccc;
+   outline: .25em solid #ccc;
    position: relative;
    z-index: 999;
    box-shadow: 0.5em 0.5em 0.5em rgba(0,0,0,.8);
+}
+#gameboard td > table.activeGame.X {
+   outline: .25em solid #ffd000;
+}
+#gameboard td > table.activeGame.O {
+   outline: .25em solid #01c5ff;
 }
 .mark {
    transition: all 400ms cubic-bezier(0.18, 1.275, 0.425, 1.5);
@@ -284,7 +291,7 @@ span.label {
    background-color:#69f;
 }
 table.request, table.players {
-   font-size:14px;
+   font-size:1.2em;
 }
 table.players {
    height:11em;
@@ -309,7 +316,6 @@ table.players td {
 .inviteWrapper {
    display:inline-block;
    padding:.25em;
-   float:left;
    margin-left:1em;
    border: .4em solid #07f;
    margin:.25em 1em;
@@ -327,13 +333,13 @@ table.request button, table.players button {
 font-size:1.1em;font-weight:bold;
 }
 .profilePic {
-   height:50px;
-   width:50px;
+   height:4em;
+   width:4em;
 }
 #invitesWrapper {
    height:22em;
    overflow:scroll;
-   width:80%;
+   width:93%;
    margin:0px auto;
 }
 .profileCell {
@@ -407,11 +413,14 @@ h1.logo {
 .decline { background-color:#c00;}
 .accept { background-color:#0c0;}
 #gamesWrapper table.game {
-   width:10em;
-   height:14em;
+   width:25em;
+   height:4em;
+}
+#gameWrapper table.game button {
+   margin-bottom:.5em;
 }
 #gameboard > tbody > tr { border-bottom: .8em solid black; }
-#gameboard > tbody > tr:last-child { border-bottom: .8em solid transparent; }
+#gameboard > tbody > tr:last-child { border-bottom:0; } 
 #gameboard > tbody > tr > td { 
    border-right: .8em solid black;
 }
@@ -574,4 +583,102 @@ div.bubble {
   border-color:transparent #fff;
 }
 
+@-webkit-keyframes rotating /* Safari and Chrome */ {
+  from {
+    -ms-transform: rotateY(0deg) rotateX(360deg);
+    -moz-transform: rotateY(0deg) rotateX(360deg);
+    -webkit-transform: rotateY(0deg) rotateX(360deg);
+    -o-transform: rotateY(0deg) rotateX(360deg);
+    transform: rotateY(0deg) rotateX(360deg);
+  }
+  50% {
+    -ms-transform: rotateY(360deg) rotateX(0deg);
+    -moz-transform: rotateY(360deg) rotateX(0deg);
+    -webkit-transform: rotateY(360deg) rotateX(0deg);
+    -o-transform: rotateY(360deg) rotateX(0deg);
+    transform: rotateY(360deg) rotateX(0deg);
 
+  }
+  to {
+    -ms-transform: rotateX(360deg);
+    -moz-transform: rotateX(360deg);
+    -webkit-transform: rotateX(360deg);
+    -o-transform: rotateX(360deg);
+    transform: rotateX(360deg);
+  }
+}
+@keyframes spinning {
+  from {
+    -ms-transform: rotateZ(0deg);
+    -moz-transform: rotateZ(0deg);
+    -webkit-transform: rotateZ(0deg);
+    -o-transform: rotateZ(0deg);
+    transform: rotateZ(0deg);
+    filter: grayscale(810%);
+  }
+  to {
+    -ms-transform: rotateZ(360deg);
+    -moz-transform: rotateZ(360deg);
+    -webkit-transform: rotateZ(360deg);
+    -o-transform: rotateZ(360deg);
+    transform: rotateZ(360deg);
+    filter: grayscale(810%);
+  }
+}
+@keyframes rotating {
+  from {
+    -ms-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+    filter: grayscale(100%) invert(50%);
+  }
+  to {
+    -ms-transform: rotateY(360deg);
+    -moz-transform: rotateY(360deg);
+    -webkit-transform: rotateY(360deg);
+    -o-transform: rotateY(360deg);
+    transform: rotateY(360deg);
+    filter: grayscale(100%) invert(50%);
+  }
+}
+
+.rotating {
+  -webkit-animation: rotating 2s linear infinite;
+  -moz-animation: rotating 2s linear infinite;
+  -ms-animation: rotating 2s linear infinite;
+  -o-animation: rotating 2s linear infinite;
+  animation: rotating 2s linear infinite;
+  position:relative;
+}
+.spinning {
+  -webkit-animation: spinning 2s linear infinite;
+  -moz-animation: spinning 2s linear infinite;
+  -ms-animation: spinning 2s linear infinite;
+  -o-animation: spinning 2s linear infinite;
+  animation: spinning 2s linear infinite;
+  position:relative;
+}
+#i0, #i1 {
+   position:absolute;
+   top:0px;
+   left:0px;
+}
+#i0 {
+   height:600px;
+   width:600px;
+   opacity:.5;
+}
+#i1 {
+   top:150px;
+   left:150px;
+   opacity:.8;
+}
+.rotate { position:relative; display:inline-block; }
+#spinner {
+   display:inline-block;
+   height:600px;
+   width:600px;
+   position:relative;
+}

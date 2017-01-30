@@ -1,3 +1,4 @@
+body { font-size: 22px; }
 #buttonbar { position:fixed; bottom:1em; text-align:center; width:100%; }
 #currentGame { border-collapse:collapse; margin:.5em auto 0px auto; width:33em; background-color:#fff; outline:.5em solid #ccc; padding:.5em; }
 #currentGame td { height:7em; width:5.8em; }
@@ -40,3 +41,50 @@ div.overlay { height:80%; background-color:rgba(0,100,255,.9); }
    height:6em;
    width:6em;
 }
+h1 {
+   font-family: "Fontdiner Swanky";
+   font-size: 4em;
+   color:#0088ee;
+   -webkit-text-stroke: 0.7px #fff;
+}
+#player1, #player2 { width: 6em; }
+#gameboard td > table.activeGame {
+   transition: all 750ms cubic-bezier(0.18, 1.275, 0.425, 1.91) 10ms;
+   transform: scale(3.8);
+}
+#gameboard td > table {
+   background-color:#fff;
+}
+#gameboard td.disabled > table {
+   background-color:initial;
+}
+#gameboard td.game_cell > table.game { 
+   transition: all .5s cubic-bezier(0.18, -.175, 0.425, 1.51);
+}
+#gameboard td#container00 > table.activeGame { transform: scale(3.8) translate(52px, 229px); }
+#gameboard td#container01 > table.activeGame { transform: scale(3.8) translate(3px, 229px); }
+#gameboard td#container02 > table.activeGame { transform: scale(3.8) translate(-52px, 229px); }
+#gameboard td#container10 > table.activeGame { transform: scale(3.8) translate(52px, 179px); }
+#gameboard td#container11 > table.activeGame { transform: scale(3.8) translate(3px, 179px); }
+#gameboard td#container12 > table.activeGame { transform: scale(3.8) translate(-52px, 179px); }
+#gameboard td#container20 > table.activeGame { transform: scale(3.8) translate(52px, 129px); }
+#gameboard td#container21 > table.activeGame { transform: scale(3.8) translate(3px, 129px); }
+#gameboard td#container22 > table.activeGame { transform: scale(3.8) translate(-52px, 129px); }
+#gameboard td.disabled > table.activeGame { background-color:#fff; }
+#gameboard td > table.activeGame { border-width:.25em; }
+#spotlight { 
+   position:absolute; 
+   z-index: 9998;
+   transition: height 300ms;
+   height:0;
+}
+#spotlight.s00 { top:62px; left:-10px;  width:588px; height:605px; }
+#spotlight.s01 { top:62px; left:-10px;  width:592px; height:600px; }
+#spotlight.s02 { top:62px; left:-12px;  width:590px; height:602px; }
+#spotlight.s10 { top:255px; left:-16px; width:588px; height:412px; }
+#spotlight.s11 { top:255px; left:-4px;  width:590px; height:408px; }
+#spotlight.s12 { top:255px; left:-4px;  width:584px; height:408px; }
+#spotlight.s20 { top:440px; left:-14px; width:594px; height:220px; }
+#spotlight.s21 { top:440px; left:-14px; width:584px; height:216px; }
+#spotlight.s22 { top:440px; left:-14px; width:590px; height:218px; }
+
