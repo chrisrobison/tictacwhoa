@@ -4,7 +4,7 @@
   
    $json = file_get_contents('php://input'); 
    $in = cleanInput(json_decode($json));
-
+   $out = "";
    switch ($in->action) {
       case "login":
          $result = mysql_query("select * from player where fb_id='".$in->data->fb_id."'");
@@ -248,17 +248,35 @@
             doLog("[WIN] $sql");
             $result = mysql_query($sql);
             
+            $winner = getRecord('player', $in->data->winner);
+            if ($winner) {
+               $sql = "update player set wins=".($winner['wins']+1).", plays=".($winner['plays']+1)." where id=".$winner['id'];
+               $result = mysql_query($sql);
+            }
             $out = getRecord('game', $in->data->game_id);
+
+            if ($out) {
+               $loserid = ($out['player1_id'] == $in->data->winner) ? $out['player2_id'] : $loserid = $out['player1_id'];
+               $loser = getRecord('player', $loserid);
+               $sql = "update player set plays=".($loser['plays']+1).", losses=".($loser['losses']+1)." where id=".$loser['id'];
+               $result = mysql_query($sql);
+            }
          }
          break;
         
       case "draw":
          if ($in->data->winner && $in->data->game_id) {
-            $sql = "update game set winner='{$in->data->winner}', game='{$in->data->game}', state='complete', draw=true where id='{$in->data->game_id}'";
+            $sql = "update game set winner='0', game='{$in->data->game}', state='complete', draw=true where id='{$in->data->game_id}'";
             doLog("[DRAW] $sql");
             $result = mysql_query($sql);
             
             $out = getRecord('game', $in->data->game_id);
+            $p1 = getRecord('player', $out['player1_id']);
+            $p2 = getRecord('player', $out['player2_id']);
+            $sql1 = "update player set plays=".($p1['plays']+1).", ties=".($p1['ties']+1)." where id=".$p1['id'];
+            $sql2 = "update player set plays=".($p2['plays']+1).", ties=".($p2['ties']+1)." where id=".$p2['id'];
+            mysql_query($sql1);
+            mysql_query($sql2);
          }
          break;
  }
@@ -688,5 +706,7 @@
    }
 
    header("Content-type: application/json");
-   print json_encode($out);
+   if ($out) {
+      print json_encode($out);
+   }
 ?>
