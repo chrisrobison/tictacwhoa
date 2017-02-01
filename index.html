@@ -7,6 +7,7 @@
    <body>
       <div id="wrapper">
          <table id="gameboard"></table>
+         <div id="spotlight"></div>
       </div>
       <div id="spinner">
         <img id='i1' src="img/X.png" class='spinning'>
@@ -31,49 +32,65 @@
       <div id='inviteOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('invite',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Invite a Friend</h1>
+         <div class="scrollUp">&#9650;</div>
          <div id="invitesWrapper"></div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='requestsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#requests" onclick="return tictac.closeOverlay('requests',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Requests</h1>
+         <div class="scrollUp">&#9650;</div>
          <div id="requestsWrapper"></div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='gamesOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('games',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Active Games</h1>
+         <div class="scrollUp">&#9650;</div>
          <div id="gamesWrapper"></div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='settingsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('settings',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Settings</h1>
-         <table id='settingsTable'>
-            <tr>
-               <td style='width:50%'>Sound Effects</td>
-               <td style='width:50%'><input type='checkbox' class='toggle toggle-round' id='soundEffects'><label for='soundEffects'></label></td>
-            </tr>
-         </table>
+         <div class="scrollUp">&#9650;</div>
+         <div id="settingsWrapper">
+            <table id='settingsTable'>
+               <tr>
+                  <td style='width:50%'>Sound Effects</td>
+                  <td style='width:50%'><input type='checkbox' class='toggle toggle-round' id='soundEffects'><label for='soundEffects'></label></td>
+               </tr>
+            </table>
+         </div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='statsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Statistics</h1>
+         <div class="scrollUp">&#9650;</div>
          <div id='statsWrapper'>
          </div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='helpOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#" onclick="return tictac.closeOverlay('help',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Tic-Tac-Whoa!<br>Help</h1>
+         <div class="scrollUp">&#9650;</div>
          <div id='helpWrapper'>
          </div>
+         <div class="scrollDown">&#9660;</div>
       </div>
 
       <div id='errorOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#error" onclick="return tictac.closeOverlay('error',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Sorry, you can't <br>do that (yet).</h1><br>
+         <div class="scrollUp">&#9650;</div>
          <div id='errorWrapper'>
             <p style='text-align:left;'>You are trying to use features that are only available if you are logged in.  To login using Facebook, click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) 
             and give approval to unlock all multiplayer features.  Tic-Tac-Whoa! only retrieves basic information such as your name and email address as
             well as your friend list so you may invite friends to play one-on-one.</p>
          </div>
+         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='fb-root'></div>
    </body>

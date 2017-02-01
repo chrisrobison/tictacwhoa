@@ -31,6 +31,7 @@
       },
       init: function() {
          tictac.state.gameCount++;
+	 tictac.state.won = 0;
          tictac.initSounds();
          $$("spinner").style.left = (window.innerWidth / 2) - 370 + "px";
          $$("spinner").style.top = (window.innerHeight / 2) - 0 + "px";
@@ -47,17 +48,19 @@
                }
             }
          }
-         // init spotlights
-         var spotlightContainer = $$("spotlight");
+         if (tictac.mobile) {
+            // init spotlights
+            var spotlightContainer = $$("spotlight");
 
-         for (var r=0; r<3; r++) {
-            for (var c=0; c<3; c++) {
-               var i = document.createElement("img");
-               i.src = "img/spotlights/" + r + "" + c + ".png";
-               i.id = "s"+r+""+c;
-               i.className = "s"+r+c;
+            for (var r=0; r<3; r++) {
+               for (var c=0; c<3; c++) {
+                  var i = document.createElement("img");
+                  i.src = "img/spotlights/" + r + "" + c + ".png";
+                  i.id = "s"+r+""+c;
+                  i.className = "s"+r+c;
 
-               spotlightContainer.appendChild(i);
+                  spotlightContainer.appendChild(i);
+               }
             }
          }
          var line;
@@ -406,7 +409,7 @@
          $$('currentPlayer').innerHTML = tictac.state.currentSymbol();
       },
       nextPlayer: function() {
-         $$("spotlight").style.height = "0";
+         if (tictac.mobile) $$("spotlight").style.height = "0";
          tictac.state.turn++;
          
          tictac.switchPlayer();
@@ -426,7 +429,7 @@
          var win = tictac.checkWin();
          if (tictac.state.currentGame && !win) {
             if (tictac.state.lastGame == tictac.state.currentGame) {
-               $$("spotlight").style.height = "0";
+               if (tictac.mobile) $$("spotlight").style.height = "0";
                setTimeout(function() { tictac.makeActive(tictac.state.currentGame); }, 500);
             } else {
                tictac.makeActive(tictac.state.currentGame);
@@ -716,9 +719,14 @@
       },
       gameWin: function(spots, winner) {
          var pidx = tictac.getPlayerIdx(winner);
-         tictac.state.players[pidx].score++;
-         tictac.updateScores();
+	 if (tictac.state.won) {
+	    return false; 	// Already registered win
+	 }
+	 tictac.state.won = tictac.state.players[pidx].id;
          
+	 tictac.state.players[pidx].score++;
+         tictac.updateScores();
+
          tictac.clearActive();
          tictac.disableAll();
          tictac.flashWinners(spots, 0);
@@ -739,8 +747,8 @@
             img.style.position = "absolute";
             img.style.width = "0px";
             img.style.height = "0px";
-            img.style.left = (window.innerWidth / 2) + "px";
-            img.style.top = "20%";
+            img.style.left = ((window.innerWidth / 2) - 150) + "px";
+            img.style.top = "1em";
             img.id = "winnerImage";
             img.style.opacity = 1;
 
@@ -1061,7 +1069,7 @@
                }
             }
          }
-         out = "<h2 style='color:#0c0;'>My Turn</h2>\n" + myturn + "\n<h2 style='color:#c00;'>Their Turn</h2>\n" + theirturn;
+         out = "<h2 style='font-size:2.5em;color:#0d0;'>My Turn</h2>\n" + myturn + "\n<h2 style='font-size:2.5em;color:#e00;'>Their Turn</h2>\n" + theirturn;
          tictac.makeBadge('games', imup);
          $$("gamesWrapper").innerHTML = out;
       },
@@ -1375,6 +1383,7 @@
          tictac.exec("start", {id: id, player1_id:p1id, player2_id:tictac.state.me.id, game: encGame}, function(obj) {
             tictac.data.currentGame = obj.game;
             tictac.state.game_id = obj.game.id;
+	    tictac.state.won = 0;
             tictac.state.player1 = obj.game.player1_id;
             tictac.state.player2 = obj.game.player2_id;
             
@@ -1431,6 +1440,7 @@
          tictac.clearWinline();
          tictac.state.game = game;
          tictac.state.games = games;
+         tictac.state.won = 0;
 
          tictac.newBoard();
          var gamekey, cellkey;
@@ -1471,6 +1481,7 @@
          tictac.exec("getGame", {id: id}, function(obj) {
             tictac.data.currentGame = obj;
             tictac.state.game_id = obj.id;
+	    tictac.state.won = 0;
             tictac.state.player1 = obj.player1_id;
             tictac.state.player2 = obj.player2_id;
             
@@ -1531,19 +1542,20 @@
          
          //$$("spotlightImg").src = "img/spotlights/"+who+".png";
          //$$("spotlightImg").className = "s"+who;
-         $$("spotlight").style.height = "0";
+         if (tictac.mobile) $$("spotlight").style.height = "0";
          
          // tictac.sounds['slide'].play();
          var snd = new Audio("sounds/slide.mp3");
          snd.play();
          setTimeout(function() { 
-            var snd = new Audio("sounds/slide.mp3");
             $$('game' + who).classList.add("activeGame");
-            $$("spotlight").className = "s" + who;
-            $$("spotlight").style.height = "";
-            $$("spotlight").style.display = "inline-block";
-            snd.play();
-            
+            if (tictac.mobile) {
+               var snd = new Audio("sounds/slide.mp3");
+               $$("spotlight").className = "s" + who;
+               $$("spotlight").style.height = "";
+               $$("spotlight").style.display = "inline-block";
+               snd.play();
+            }
          }, 600);
       },
       invite: function(id) {

@@ -175,7 +175,9 @@
          $p2 = getRecord('player', $data->player2_id);
          $out->players->{$data->player1_id} = $p1;
          $out->players->{$data->player2_id} = $p2;
-
+	
+	 $sql = "update player set started=started+1 where (id={$data->player1_id} or id={$data->player2_id})";
+	 mysql_query($sql);
          break;
       case "ackMove":
          $sql = "update move set seen=1 where id={$in->data->id}";
@@ -273,10 +275,8 @@
             $out = getRecord('game', $in->data->game_id);
             $p1 = getRecord('player', $out['player1_id']);
             $p2 = getRecord('player', $out['player2_id']);
-            $sql1 = "update player set plays=".($p1['plays']+1).", ties=".($p1['ties']+1)." where id=".$p1['id'];
-            $sql2 = "update player set plays=".($p2['plays']+1).", ties=".($p2['ties']+1)." where id=".$p2['id'];
-            mysql_query($sql1);
-            mysql_query($sql2);
+            $sql = "update player set plays=plays+1, ties=ties+1 where id={$p1['id']} or id={$p2['id']}";
+            mysql_query($sql);
          }
          break;
  }

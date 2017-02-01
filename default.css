@@ -362,10 +362,17 @@ table.players td button, table.game td button {
 }
 #gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper, #invitesWrapper, #helpWrapper {
    overflow: scroll;
-   height: 20.4em;
-   background-color: rgba(255,255,255,.95);
+   height: 35em;
+   background-color: rgba(255,255,255,0);
    border: .5em solid transparent;
    border-radius: 2em;
+   font-size:13px;
+   position:relative;
+}
+#gamesWrapper:before {
+   content: "\25B2";
+   position:fixed;
+   top:3px;
 }
 .playerCell {
    height:5em;
@@ -682,5 +689,6 @@ div.bubble {
    width:600px;
    position:absolute;
    z-index:99999;
+   top:50px;
 }
 
