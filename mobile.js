@@ -3,7 +3,8 @@
       mobile: true,
 
    });
-   
+   tictac.initSpotlights();
+
    let bigcells = document.querySelectorAll(".big");
    for (let bigcell of bigcells) {
       bigcell.addEventListener("click", function(evt) {
@@ -31,6 +32,12 @@
             }
             tgt.classList.remove("pickGame");
  
+      });
+      $$("spotlight").addEventListener("click", function(evt) {
+         tictac.state.pickMode = "";
+         tictac.state.currentGame = "";
+         tictac.clearActive();
+         $$("spotlight").style.height = "0";
       });
    }
 })(window);

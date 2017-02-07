@@ -58,18 +58,19 @@ h1 {
 #gameboard td.disabled > table {
    background-color:initial;
 }
-#gameboard td.game_cell > table.game { 
+#gameboard td.game_cell > table.game, .game_cell { 
    transition: all 300ms cubic-bezier(0.18, -.175, 0.425, 1.31);
 }
-#gameboard td#container00 > table.activeGame { transform: scale(3.8) translate(52px, 229px); }
-#gameboard td#container01 > table.activeGame { transform: scale(3.8) translate(3px, 229px); }
-#gameboard td#container02 > table.activeGame { transform: scale(3.8) translate(-52px, 229px); }
-#gameboard td#container10 > table.activeGame { transform: scale(3.8) translate(52px, 179px); }
-#gameboard td#container11 > table.activeGame { transform: scale(3.8) translate(3px, 179px); }
-#gameboard td#container12 > table.activeGame { transform: scale(3.8) translate(-52px, 179px); }
-#gameboard td#container20 > table.activeGame { transform: scale(3.8) translate(52px, 129px); }
-#gameboard td#container21 > table.activeGame { transform: scale(3.8) translate(3px, 129px); }
-#gameboard td#container22 > table.activeGame { transform: scale(3.8) translate(-52px, 129px); }
+table#gameboard td > table.hop { transform: scale(2); outline: .5em solid #ff0000; z-index:99999;}
+#gameboard td#container00 > table.activeGame { transform: scale(3.2) translate(52px, 210px); }
+#gameboard td#container01 > table.activeGame { transform: scale(3.2) translate(3px, 210px); }
+#gameboard td#container02 > table.activeGame { transform: scale(3.2) translate(-52px, 210px); }
+#gameboard td#container10 > table.activeGame { transform: scale(3.2) translate(52px, 160px); }
+#gameboard td#container11 > table.activeGame { transform: scale(3.2) translate(3px, 160px); }
+#gameboard td#container12 > table.activeGame { transform: scale(3.2) translate(-52px, 160px); }
+#gameboard td#container20 > table.activeGame { transform: scale(3.2) translate(52px, 110px); }
+#gameboard td#container21 > table.activeGame { transform: scale(3.2) translate(0px, 110px); }
+#gameboard td#container22 > table.activeGame { transform: scale(3.2) translate(-52px, 110px); }
 #gameboard td.disabled > table.activeGame { background-color:#fff; }
 #gameboard td > table.activeGame { border-width:.25em; }
 #spotlight { 
@@ -80,22 +81,31 @@ h1 {
    overflow:hidden;
    height:0px;
 }
-#spotlight.s00 { top:70px; left:-10px;  width:588px; height:605px; }
-#spotlight.s01 { top:70px; left:-10px;  width:592px; height:600px; }
-#spotlight.s02 { top:70px; left:-12px;  width:590px; height:602px; }
-#spotlight.s10 { top:255px; left:-10px; width:588px; height:412px; }
-#spotlight.s11 { top:255px; left:-4px;  width:590px; height:408px; }
-#spotlight.s12 { top:255px; left:-4px;  width:584px; height:408px; }
-#spotlight.s20 { top:440px; left:-14px; width:594px; height:220px; }
-#spotlight.s21 { top:440px; left:-14px; width:584px; height:216px; }
-#spotlight.s22 { top:440px; left:-14px; width:590px; height:218px; }
+#spotlight.s00 { top:2.6em; left:5.5em; width:520px; height:440px; }
+#spotlight.s01 { top:2.5em; left:6em;  width:585px; height:445px; }
+#spotlight.s02 { top:2.7em; left:8em;  width:530px; height:440px; }
+#spotlight.s10 { top:13.5em; left:4em; width:588px; height:245px; }
+#spotlight.s11 { top:12em; left:5.5em;  width:590px; height:272px; }
+#spotlight.s12 { top:12.2em; left:8em;  width:525px; height:272px; }
+#spotlight.s20 { top:22em; left:5.5em; width:534px; height:100px; }
+#spotlight.s21 { top:22em; left:5em; width:584px; height:100px; }
+#spotlight.s22 { top:21.7em; left:6.5em; width:590px; height:100px; }
 div#spotlight img { display: none; }
-div#spotlight.s00 img#s00 { display: inline; }
-div#spotlight.s01 img#s01 { display: inline; }
-div#spotlight.s02 img#s02 { display: inline; }
-div#spotlight.s10 img#s10 { display: inline; }
-div#spotlight.s11 img#s11 { display: inline; }
-div#spotlight.s12 img#s12 { display: inline; }
-div#spotlight.s20 img#s20 { display: inline; }
-div#spotlight.s21 img#s21 { display: inline; }
-div#spotlight.s22 img#s22 { display: inline; }
+div#spotlight.s00 img#s00 { width:520px; height:440px; display: inline; }
+div#spotlight.s01 img#s01 { width:520px; height:445px; display: inline; }
+div#spotlight.s02 img#s02 { width:520px; height:440px; display: inline; }
+div#spotlight.s10 img#s10 { width:530px; height:245px; display: inline; }
+div#spotlight.s11 img#s11 { width:525px; height:272px; display: inline; }
+div#spotlight.s12 img#s12 { width:525px; height:272px; display: inline; }
+div#spotlight.s20 img#s20 { width:534px; height:100px; display: inline; }
+div#spotlight.s21 img#s21 { width:524px; height:100px; display: inline; }
+div#spotlight.s22 img#s22 { width:525px; height:100px; display: inline; }
+table.players {
+   font-size:1.8em;
+}
+.field { font-size:.8em; }
+.val {font-size:.8em; text-align:right;}
+#spinner {
+   top:250px;
+}
+#toptitle { display:none; }

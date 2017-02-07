@@ -2,13 +2,32 @@
 <html>
    <head>
       <title>Tic Tac Whoa!</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=.5" />
       <link rel="stylesheet" type="text/css" href="default.css"/>
       <link rel="stylesheet" type="text/css" href="mobile.css"/>
    </head>
    <body>
-      <h1>Tic-Tac-Whoa!</h1>
+      <h1 id='toptitle'>Tic-Tac-Whoa!</h1>
       <div id="wrapper">
-         <table id="gameboard"></table><br>
+         <div id='scoreboard' style='display:inline-block;'>
+         <table id="statusboard" style="background-color:#fff;">
+            <tbody>
+               <tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr>
+               <tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr>
+               <tr><th><img src="img/X.png" height="50" width="50"></th></tr>
+               <tr><td id="p1"><img src="img/avatars/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr>
+               <tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr>
+               <tr><th><img src="img/O.png" width="50" height="50"></th></tr>
+               <tr><td id="p2"><img id="player2Pic" src="img/avatars/robot.png" height="50" width="50"><br>Computer</td></tr>
+               <tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr>
+               <tr><th>Player<br>Up</th></tr>
+               <tr><td id="currentPlayer">X</td></tr>
+               <tr><td><button onclick="tictac.init()" id="gamenew">New Game</button></td></tr>
+            </tbody>
+         </table>
+         </div>
+         <table id="gameboard"></table>
          <div id="spotlight"></div>
       </div>
       <div id="spinner">
@@ -43,9 +62,9 @@
          <div class='button' id='inviteButton'><img id='invite' src='img/btn/invite.png' alt='Send a Game Invitation'><br><span class='label' id='inviteLabel'>Invite Friends</span></div>
          <div class='button' id='requestsButton'><img id='requests' src='img/btn/requests.png' alt='Game Requests'><br><span class='label' id='requestsLabel'>Game Requests</span></div>
          <div class='button' id='gamesButton'><img id='games' src='img/btn/game.png' alt='Your Current Games'><br><span class='label' id='gamesLabel'>Active Games</span></div>
-         <div class='button' id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
+         <div class='button' style="display:none" id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
          <div class='button' style="display:none" id='statsButton'><img id='stats' src='img/btn/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
-         <div class='button' id='helpButton'><img id='help' src='img/btn/help.png' alt='Help'><br><span class='label' id='helpLabel'>Help</span></div>
+         <div class='button ok' id='helpButton'><img id='help' src='img/btn/help.png' alt='Help'><br><span class='label' id='helpLabel'>Help</span></div>
          <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/btn/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
       </div>
       <div id='newgameOverlay' style='display:none;' class='overlay'>
@@ -72,10 +91,17 @@
       <div id='settingsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#settings" onclick="return tictac.closeOverlay('settings',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Settings</h1>
+         <div id="settingsWrapper"></div>
       </div>
       <div id='statsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#stats" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Statistics</h1>
+         <div id="statsWrapper"></div>
+      </div>
+      <div id='helpOverlay' style='display:none;' class='overlay'>
+         <a class="closeButton" href="#help" onclick="return tictac.closeOverlay('help',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Help</h1>
+         <div id="helpWrapper"></div>
       </div>
       <div id='errorOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#error" onclick="return tictac.closeOverlay('error',1)"><img src="img/close.png" class="closeImage"></a>

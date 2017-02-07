@@ -15,7 +15,12 @@ table { border-collapse:collapse; margin:0px auto; }
 .yellowText { color:#ffdd00; }
 .blueText { color:#01c5ff; }
 .redText { color:#f72f49; }
-#gameboard { font-weight: bold; background-color:#fff; margin:0; width:33em;}
+#gameboard { 
+   font-weight:bold; 
+   background-color:#fff; 
+   margin:0; 
+  /*  width:33em; */
+}
 table,td,tr,th,img { margin:0; padding:0; }
 .game_col0, .game_col1 {
    border-right: 1em solid black;
@@ -26,6 +31,7 @@ table,td,tr,th,img { margin:0; padding:0; }
 .game_cell {
    height:7em;
    width:7em;
+   background-color:#555;
 }
 #gameboard > tbody > tr > td {
    padding: .5em;
@@ -73,7 +79,7 @@ th { background-color:#000; color:#0f0; }
 .OWINcell { background-color: rgba(0,100,255,.2); }
 #gameCount { text-align:left; padding-left: 1em; }
 .win { background-color: #0f0; }
-.winimage { position:absolute;top:0px;left:0px;height:100%; transition: all 500ms cubic-bezier(0.18, 1.275, 0.425, 1.7); }
+.winimage { position:absolute;top:7px;left:8px;height:90%; transition: all 500ms cubic-bezier(0.18, 1.275, 0.425, 1.7); }
 .winimage:hover { opacity:.3; }
 #statusboard { position:relative; height:100%; display:inline-table; font-size:14px;  }
 #controls { vertical-align:bottom;height:100%;position:relative;font-size:14px;font-weight:normal; text-align:left;line-height:1.5;text-transform:uppercase;}
@@ -116,7 +122,7 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 }
 #p1 { min-height:100px; }
 #p2 { min-height:100px; }
-#scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; width:115px; }
+#scoreboard { float:left; vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; width:115px; }
 .Xcursor { cursor: url(img/Xcursor.png) 50 50, auto; }
 .Ocursor { cursor: url(img/Ocursor.png) 50 50, auto; }
 .banner { 
@@ -360,14 +366,24 @@ table.players td button, table.game td button {
    box-shadow: 3px 3px 3px rgba(0,0,0,.5);
    font-weight: bold;
 }
+table td button.invited {
+   background-color:#c60;
+   border: 4px solid #e82;
+   color:#fff;
+}
+
 #gamesWrapper, #settingsWrapper, #statsWrapper, #errorWrapper, #requestsWrapper, #invitesWrapper, #helpWrapper {
    overflow: scroll;
    height: 35em;
-   background-color: rgba(255,255,255,0);
+   background-color: rgba(255,255,255,1);
    border: .5em solid transparent;
    border-radius: 2em;
    font-size:13px;
    position:relative;
+}
+div.#helpWrapper {
+   font-size:28px;
+   text-align:left;
 }
 #gamesWrapper:before {
    content: "\25B2";
@@ -429,7 +445,6 @@ h1.logo {
 #gameboard > tbody > tr { border-bottom: .8em solid black; }
 #gameboard > tbody > tr:last-child { border-bottom:0; } 
 #gameboard > tbody > tr > td { 
-   border-right: .8em solid black;
 }
 input.toggle {
    position: absolute;
@@ -598,7 +613,7 @@ div.bubble {
     -o-transform: rotateY(0deg) rotateX(360deg);
     transform: rotateY(0deg) rotateX(360deg);
   }
-  50% {
+  25% {
     -ms-transform: rotateY(360deg) rotateX(0deg);
     -moz-transform: rotateY(360deg) rotateX(0deg);
     -webkit-transform: rotateY(360deg) rotateX(0deg);
@@ -614,14 +629,14 @@ div.bubble {
     transform: rotateX(360deg);
   }
 }
-@keyframes spinning {
+@keyframes spinningX {
   from {
     -ms-transform: rotateZ(0deg);
     -moz-transform: rotateZ(0deg);
     -webkit-transform: rotateZ(0deg);
     -o-transform: rotateZ(0deg);
     transform: rotateZ(0deg);
-    filter: grayscale(810%);
+    filter: grayscale(100%);
   }
   to {
     -ms-transform: rotateZ(360deg);
@@ -629,7 +644,77 @@ div.bubble {
     -webkit-transform: rotateZ(360deg);
     -o-transform: rotateZ(360deg);
     transform: rotateZ(360deg);
-    filter: grayscale(810%);
+    filter: grayscale(100%);
+  }
+}
+@keyframes rotatingX {
+  from {
+    -ms-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+    filter: grayscale(0);
+  }
+  50% {
+   filter: grayscale(100%);
+  }
+  to {
+    -ms-transform: rotateY(360deg);
+    -moz-transform: rotateY(360deg);
+    -webkit-transform: rotateY(360deg);
+    -o-transform: rotateY(360deg);
+    transform: rotateY(360deg);
+    filter: grayscale(0%);
+  }
+}
+
+@keyframes spinningO {
+  from {
+    -ms-transform: rotateZ(0deg);
+    -moz-transform: rotateZ(0deg);
+    -webkit-transform: rotateZ(0deg);
+    -o-transform: rotateZ(0deg);
+    transform: rotateZ(0deg);
+  }
+  to {
+    -ms-transform: rotateZ(360deg);
+    -moz-transform: rotateZ(360deg);
+    -webkit-transform: rotateZ(360deg);
+    -o-transform: rotateZ(360deg);
+    transform: rotateZ(360deg);
+  }
+}
+@keyframes rotatingO {
+  from {
+    -ms-transform: rotateY(0deg);
+    -moz-transform: rotateY(0deg);
+    -webkit-transform: rotateY(0deg);
+    -o-transform: rotateY(0deg);
+    transform: rotateY(0deg);
+  }
+  to {
+    -ms-transform: rotateY(360deg);
+    -moz-transform: rotateY(360deg);
+    -webkit-transform: rotateY(360deg);
+    -o-transform: rotateY(360deg);
+    transform: rotateY(360deg);
+  }
+}
+@keyframes spinning {
+  from {
+    -ms-transform: rotateZ(0deg);
+    -moz-transform: rotateZ(0deg);
+    -webkit-transform: rotateZ(0deg);
+    -o-transform: rotateZ(0deg);
+    transform: rotateZ(0deg);
+  }
+  to {
+    -ms-transform: rotateZ(360deg);
+    -moz-transform: rotateZ(360deg);
+    -webkit-transform: rotateZ(360deg);
+    -o-transform: rotateZ(360deg);
+    transform: rotateZ(360deg);
   }
 }
 @keyframes rotating {
@@ -639,7 +724,6 @@ div.bubble {
     -webkit-transform: rotateY(0deg);
     -o-transform: rotateY(0deg);
     transform: rotateY(0deg);
-    filter: grayscale(100%) invert(50%);
   }
   to {
     -ms-transform: rotateY(360deg);
@@ -647,24 +731,39 @@ div.bubble {
     -webkit-transform: rotateY(360deg);
     -o-transform: rotateY(360deg);
     transform: rotateY(360deg);
-    filter: grayscale(100%) invert(50%);
   }
 }
 
-.rotating {
-  -webkit-animation: rotating 2s linear infinite;
-  -moz-animation: rotating 2s linear infinite;
-  -ms-animation: rotating 2s linear infinite;
-  -o-animation: rotating 2s linear infinite;
-  animation: rotating 2s linear infinite;
+div.X .rotating {
+  -webkit-animation: rotatingX 2s linear infinite;
+  -moz-animation: rotatingX 2s linear infinite;
+  -ms-animation: rotatingX 2s linear infinite;
+  -o-animation: rotatingX 2s linear infinite;
+  animation: rotatingX 2s linear infinite;
   position:relative;
 }
-.spinning {
-  -webkit-animation: spinning 2s linear infinite;
-  -moz-animation: spinning 2s linear infinite;
-  -ms-animation: spinning 2s linear infinite;
-  -o-animation: spinning 2s linear infinite;
-  animation: spinning 2s linear infinite;
+div.X .spinning {
+  -webkit-animation: spinningX 2s linear infinite;
+  -moz-animation: spinningX 2s linear infinite;
+  -ms-animation: spinningX 2s linear infinite;
+  -o-animation: spinningX 2s linear infinite;
+  animation: spinningX 2s linear infinite;
+  position:relative;
+}
+div.O .rotating {
+  -webkit-animation: rotatingO 2s linear infinite;
+  -moz-animation: rotatingO 2s linear infinite;
+  -ms-animation: rotatingO 2s linear infinite;
+  -o-animation: rotatingO 2s linear infinite;
+  animation: rotatingO 2s linear infinite;
+  position:relative;
+}
+div.O .spinning {
+  -webkit-animation: spinningO 2s linear infinite;
+  -moz-animation: spinningO 2s linear infinite;
+  -ms-animation: spinningO 2s linear infinite;
+  -o-animation: spinningO 2s linear infinite;
+  animation: spinningO 2s linear infinite;
   position:relative;
 }
 #i0, #i1 {
@@ -675,7 +774,7 @@ div.bubble {
 #i0 {
    height:600px;
    width:600px;
-   opacity:.5;
+   opacity:.8;
 }
 #i1 {
    top:150px;
@@ -688,7 +787,17 @@ div.bubble {
    height:600px;
    width:600px;
    position:absolute;
-   z-index:99999;
+   z-index:9998;
+
    top:50px;
+}
+span.logo { font-family: "Fontdiner Swanky", sans-serif; color:#0088ef; -webkit-text-stroke: 1px solid rgba(255,255,255,.5); text-shadow:2px 2px 2px rgba(0,0,0,.35); }
+.dim { opacity: .45; }
+
+.notice {
+   background-color:#900;
+   color: #fff;
+   opacity:1;
+   font-size:48px;
 }
 

@@ -14,11 +14,15 @@
          players:[ {score:0,smallscore:0,tie:0,loss:0},{score:0,smallscore:0,draw:0,loss:0,tie:0} ],
          overlay: {originX:500, originY:800},
          lastGameCheck: 0,
+         pickMode:"",
+         pages: {},
          me: {}
       },
       sounds: {},
       data: {
-         players: {}
+         players: {},
+         invites: {},
+         requests: {}
       },
       getPlayerIdx: function(player) {
          return (player=="O") ? 1 : 0;
@@ -30,11 +34,18 @@
          }
       },
       init: function() {
+         if (window.Notification && Notification.permission!=='denied') {
+            Notification.requestPermission(function(permission) {
+               if (permission == "granted") {
+                  tictac.state.notify = true;
+               }
+            });
+         }
          tictac.state.gameCount++;
-	 tictac.state.won = 0;
+         tictac.state.won = 0;
          tictac.initSounds();
          $$("spinner").style.left = (window.innerWidth / 2) - 370 + "px";
-         $$("spinner").style.top = (window.innerHeight / 2) - 0 + "px";
+         $$("spinner").classList.add("X");
          $$("spinner").style.display = "none";
 
          for (var r=0; r<3; r++) {
@@ -88,18 +99,19 @@
          tictac.changePlayer(0, tictac.player[0]);
          tictac.changePlayer(1, tictac.player[1]);
 
-         tictac.state.currentGame = "11";
+         tictac.state.currentGame = "";
          tictac.clearDisabled();
-         tictac.disableAll();
+//         tictac.disableAll();
          tictac.clearActive();
          
-         $$("spotlight").style.height = "0";
-         $$("spotlight").classList.add("s11");
-         // $$("s11").style.display = "inline";
+         if (tictac.state.currentGame) {
+            $$("spotlight").style.height = "0";
+            $$("spotlight").classList.add("s"+tictac.state.currentGame);
          
-         setTimeout(function() {
-            tictac.makeActive(tictac.state.currentGame);
-         }, 500);
+            setTimeout(function() {
+               tictac.makeActive(tictac.state.currentGame);
+            }, 500);
+         }
 
          var winimage = $$("winnerImage");
          if (winimage) {
@@ -108,7 +120,7 @@
          
          $$("gameCount").innerHTML = "Game: " + tictac.state.gameCount + "<br>Ties: " + tictac.state.gameTies;
          tictac.state.me.mymark = "X";
-
+         $$("spotlight").style.display = "none";
          if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
             tictac.automove();
          }
@@ -124,13 +136,26 @@
          //out += '<br><span id="p'+player+'Score">'+tictac.state.players[player].score+' [w:'+tictac.state.players[player].smallscore+' t:'+tictac.state.players[player].tie+']</span>';
          $$("p"+(player+1)).innerHTML = out;
       },
+      initSpotlights: function() {
+            var spotlightContainer = $$("spotlight");
+
+            for (var r=0; r<3; r++) {
+               for (var c=0; c<3; c++) {
+                  var i = document.createElement("img");
+                  i.src = "img/spotlights/" + r + "" + c + ".png";
+                  i.id = "s"+r+""+c;
+                  i.className = "s"+r+c;
+
+                  spotlightContainer.appendChild(i);
+               }
+            }
+      },
       changePlayer: function(player, who) {
          if (who=="Facebook Login") {
             FB.login(function(response) {
                if (response.authResponse) {
-                  console.log('Welcome to Facebook!  Fetching your information.... ');
+                  tictac.state.authResponse = Object.assign({}, response.authResponse);
                   FB.api('/me?fields=name,first_name,last_name,email,picture.width(250).height(250)', function(response) {
-                     console.log('Good to see you, ' + response.name + '.');
                      // document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '! <img src="'+response.picture.data.url+'">';
                      tictac.player[player] = response.name;
                      var plist = $$("player"+(player+1));
@@ -148,7 +173,7 @@
                      tictac.state.me.fb_id = tictac.state.players[player].fb_id = response.id;
                      tictac.state.me.registered = tictac.state.players[player].registered = false;
                      tictac.doLogin(tictac.state.players[player], player);
-                  });
+                  },{scope:"email,user_friends"});
                } else {
                   console.log('User cancelled login or did not fully authorize.');
                }
@@ -161,58 +186,64 @@
          return false;
       },
       move: function(spot, player, noReport=false) {
+         var gameInfo = spot.match(/game(\d\d)(\d\d)?/);
+         if (tictac.state.symbols[tictac.state.currentPlayer]!=player) {
+            console.log("[move] Not player '"+player+"' turn (should be "+tictac.state.symbols[tictac.state.currentPlayer]+")");
+            return false;
+         }
+         if (!noReport && (tictac.state.currentGame=="") && (!tictac.state.pickMode)) {
+            tictac.makeActive(gameInfo[1]);
+            tictac.state.pickMode = gameInfo[1];
+            return false;
+         } 
+         if (!noReport && (tictac.state.currentGame=="") && tictac.state.pickMode) {
+            if (tictac.state.pickMode != gameInfo[1]) {
+               tictac.clearActive();
+               tictac.makeActive(gameInfo[1]);
+               return false;
+            } else {
+               tictac.state.currentGame = tictac.state.pickMode;
+               tictac.state.pickMode = "";
+            }
+         }
          if (!spot || spot.length<8) {
             console.log("[move] Invalid or missing move space: "+spot);
             return false;
          }
 
-         if (tictac.state.symbols[tictac.state.currentPlayer]!=player) {
-            console.log("[move] Not player '"+player+"' turn (should be "+tictac.state.symbols[tictac.state.currentPlayer]+")");
-            return false;
-         }
          
-         var tgt = $$(spot),
-             gameInfo = spot.match(/game(\d\d)(\d\d)/);
+         var tgt = $$(spot);
    
          if ((!gameInfo[1]) || (gameInfo[1] != tictac.state.currentGame) && (tictac.state.currentGame!="")) {
             console.log("[move] Attempt to make move on inactive game: " + gameInfo[1] + " (should be " + tictac.state.currentGame +")");
             return false;
          }
-         
          if (tictac.state.games["game"+gameInfo[1]][spot]!="") {
             console.log("[move] Attempt to make move on already occupied space: " + tictac.state.games["game"+gameInfo[1]][spot] + " (game: game"+gameInfo[1]+", spot: "+spot+")");
             return false;
          }
-
          if (tictac.state.currentGame=="") {
             tictac.state.currentGame = gameInfo[1];
          }
          
+
          // Take care of DOM stuff first
          var mark = document.createElement("img");
-         mark.src = "img/"+player+".png";
+         mark.src = "img/ani"+player+".gif";
          mark.className = "mark";
+         tgt.appendChild(mark);
+         
+         setTimeout(function() {
+            mark.src = "img/"+player+".png";
+         }, 2000);
 
          // tgt.innerHTML = player;
-         tgt.appendChild(mark);
          setTimeout(function() { 
             mark.classList.add("marked"); 
-            var snd = new Audio("sounds/move"+tictac.state.currentPlayer+".mp3");
-            snd.play();
+            tictac.playSound("move"+tictac.state.currentPlayer);
          }, 150);
          tgt.classList.add(player);
          
-         if (tictac.mobile) {
-         /*
-         var bm = mark.cloneNode();
-            bm.classList.remove('mark');
-            bm.classList.add('bigMark');
-            $$("big"+gameInfo[2]).appendChild(bm);
-            setTimeout(function() { 
-               bm.classList.add("marked"); 
-            }, 150);
-         */
-         }
          // Log player move 
          tictac.state.games["game"+tictac.state.currentGame][spot] = player;
          tictac.state.lastGame = tictac.state.currentGame;
@@ -226,6 +257,10 @@
          }
 
          setTimeout(function() { tictac.nextPlayer(); }, 1000);
+      },
+      playSound: function(sound) {
+         var snd = new Audio("sounds/"+sound+".mp3");
+         snd.play();
       },
       pickGame: function() {
          var picks = [];
@@ -424,6 +459,7 @@
          } else {
             tictac.state.currentGame="";
             tictac.clearDisabled();
+            tictac.growAll();
          }
 
          var win = tictac.checkWin();
@@ -439,6 +475,7 @@
          if (tictac.state.players[tictac.state.currentPlayer].id == tictac.state.me.id) {
             $$("spinner").style.display = "none";
          } else {
+            $$("spinner").classList.add(tictac.state.me.mymark);
             $$("spinner").style.display = "inline-block";
          }
          if ((tictac.player[tictac.state.currentPlayer]=="Computer") && (!win)) {
@@ -719,12 +756,13 @@
       },
       gameWin: function(spots, winner) {
          var pidx = tictac.getPlayerIdx(winner);
-	 if (tictac.state.won) {
-	    return false; 	// Already registered win
-	 }
-	 tictac.state.won = tictac.state.players[pidx].id;
-         
-	 tictac.state.players[pidx].score++;
+         $$("spinner").style.display = "none";
+         if (tictac.state.won) {
+            return false; 	// Already registered win
+         }
+         tictac.state.won = tictac.state.players[pidx].id;
+              
+         tictac.state.players[pidx].score++;
          tictac.updateScores();
 
          tictac.clearActive();
@@ -767,7 +805,7 @@
          setTimeout(function() {
                var img = $$("winnerImage");
                img.style.height = "600px";
-               img.style.left = (window.innerWidth / 2) - 350 + "px";
+               img.style.left = "50px"; // (window.innerWidth / 2) - 350 + "px";
                img.style.width = "600px";
                img.style.top = "30px";
          }, 1000);
@@ -888,19 +926,19 @@
          if (parseInt(s1[1]) == parseInt(s2[1])) {
             w = "570px";
             h = "25px";
-            line.style.top = 310 + (210 * (s1[1]-1)) + "px";
+            line.style.top = 280 + (210 * (s1[1]-1)) + "px";
          }
          if (parseInt(s1[2]) == parseInt(s2[2])) {
             w = "25px";
             h = "570px";
-            line.style.top = "35px";
-            line.style.marginLeft = 285 + (210 * (s1[2]-1)) + "px";
+            line.style.top = "5px";
+            line.style.marginLeft = 290 + (218 * (s1[2]-1)) + "px";
          }
          if (s1[1]==0 && s1[2] == 0 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==2) {
             w = "780px";
             h = "25px";
             line.style.transformOrigin = "0% 0%";
-            line.style.top = "30px";
+            line.style.top = "5px";
             line.style.marginLeft = "40px";
             line.style.transform="rotate(45deg)";
          }
@@ -908,7 +946,7 @@
             w = "780px";
             h = "25px";
             line.style.transformOrigin = "0% 0%";
-            line.style.top = "600px";
+            line.style.top = "570px";
             line.style.marginLeft = "4px";
             line.style.transform="rotate(-45deg)";
          }
@@ -924,9 +962,15 @@
          xmlhttp.open("POST", "cmd.php");
          xmlhttp.setRequestHeader("Content-Type", "application/json");
          xmlhttp.onreadystatechange = function() {
-             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                if (callback && typeof(callback) == "function") {
-                    callback(JSON.parse(xmlhttp.responseText));
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+               if (callback && typeof(callback) == "function") {
+                  var obj = {};
+                  if (xmlhttp.responseText) {
+                     try {
+                        obj = JSON.parse(xmlhttp.responseText);
+                     } catch(e) { }
+                  }
+                  callback(obj);
                 // console.log("[RESPONSE] " + xmlhttp.responseText);
                 }
              }
@@ -980,29 +1024,46 @@
       },
       checkInvites: function() {
          tictac.exec("invites", {id: tictac.state.me.id}, function(obj) {
-            if (obj.invites.length) {
-               console.log("Got an invite!!!");
+            if (obj.invites.length || obj.requests.length) {
                tictac.fillRequests(obj.invites, obj.requests);
-
-               tictac.makeBadge('requests', obj.invites.length);
                console.dir(obj);
+               tictac.makeBadge('requests', obj.invites.length);
+               if (tictac.state.notify) {
+                //  tictac.doNotify("You got a game invitation!", "img/logos/logo-256.png", "Tic-Tac-Whoa! Invitation");
+               }
+
+               for (var invite of obj.invites) {
+                  tictac.ackInvite(invite.id);
+               }
             }
          });
+      },
+      ackInvite: function(id) {
+         if (id) {
+            tictac.exec("ackInvite", {id: id}, function(response) {
+            });
+         }
       },
       fillRequests: function(invites, reqs) {
          var out = '<div class="requestWrapper">';
          out += "<h2>Incoming</h2>";
-         for (var i in invites) {
-            var invite = invites[i];
-            out += '<table class="request"><tr><td style="width:50px"><img src="'+invite['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request from ' + invite['player'] + '</div>';
-            out += 'Requested: ' + tictac.dateDuration(invite.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button class="highlight btn accept" onclick="tictac.accept(' + invite['id'] + ', ' + invite['player1_id'] + ')">Accept</button>';
-            out += '<button class="highlight btn ignore" onclick="tictac.ignore(' + invite['id'] + ')">Ignore</button>';
-            out += '<button class="highlight btn decline" onclick="tictac.decline(' + invite['id'] + ')">Decline</button>';
-            out += '</td></tr></table>';
+         if (invites.length) {
+            for (var i in invites) {
+               var invite = invites[i];
+               tictac.data.invites[invites[i].id] = invite;
+               out += '<table class="request"><tr><td style="width:50px"><img src="'+invite['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request from ' + invite['player'] + '</div>';
+               out += 'Requested: ' + tictac.dateDuration(invite.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button class="highlight btn accept" onclick="tictac.accept(' + invite['id'] + ', ' + invite['player1_id'] + ')">Accept</button>';
+               out += '<button class="highlight btn ignore" onclick="tictac.ignore(' + invite['id'] + ')">Ignore</button>';
+               out += '<button class="highlight btn decline" onclick="tictac.decline(' + invite['id'] + ')">Decline</button>';
+               out += '</td></tr></table>';
+            }
+         } else {
+            out += "<h3>No incoming game requests</h3>";
          }
          out += "</div><div class='requestWrapper'><h2>Outgoing</h2>";
          for (var i in reqs) {
             var req = reqs[i];
+            tictac.data.requests[reqs[i].id] = req;
             out += '<table class="request"><tr><td style="width:50px"><img src="'+req['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request to ' + req['player'] + '</div>';
             out += 'Requested: ' + tictac.dateDuration(req.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button style="width:10em" class="highlight btn cancel" onclick="tictac.cancelInvite(' + req['id'] + ')">Cancel Invitation</button>';
             out += '</td></tr></table>';
@@ -1011,6 +1072,24 @@
          $$("requestsWrapper").innerHTML = out;
 
       },
+      checkRequested: function(id) {
+         for (var i in tictac.data.requests) {
+	    var req = tictac.data.requests[i];
+	    if (inv.player1_id==id) {
+	       return true;
+	    }
+	 }
+	 return false;
+      },
+      checkInvited: function(id) {
+         for (var i in tictac.data.invites) {
+	    var inv = tictac.data.invites[i];
+	    if (inv.player2_id==id) {
+	       return true;
+	    }
+	 }
+	 return false;
+      },
       fillPlayers: function(players) {
          var out = "";
          for (var i in players) {
@@ -1018,8 +1097,14 @@
             out += '<div class="inviteWrapper"><table class="players"><tr><td class="profileCell"><img src="'+player['photo']+'" class="profilePic"><div class="playersHeader">' + player['player'] + '</div></td>';
             out += '<td><table class="clean"><tr><td class="field">Played:</td><td class="val">' + player.plays + '</td></tr>';
             out += '<tr><td class="field">Wins:</td><td class="val">' + player.wins + '</td></tr><tr><td class="field">Losses:</td><td class="val">' + player.losses + '</td></tr><tr><td class="field">Ties:</td><td class="val">' + player.ties + '</td></tr></table></td></tr><tr>';
-            out += '<td colspan="2" style="text-align:center"><button onclick="tictac.invite(' + player.id + ')">Invite</button>';
-            out += '</td></tr></table></div>';
+            out += '<td colspan="2" style="text-align:center"><button id="btnInvite_'+player.id+'" ';
+	    if (!tictac.checkInvited(player.id)) {
+	       out += 'onclick="tictac.invite(' + player.id + ')">Invite';
+	    } else {
+	       out += 'class="invited">Invited';
+	    }
+	    
+            out += '</button></td></tr></table></div>';
          }
          $$("invitesWrapper").innerHTML = out;
 
@@ -1205,7 +1290,7 @@
                tictac.checkInvites();
                setTimeout(function() { tictac.getGames(); }, 750);
             }, 750);
-            tictac.state.inviteTimeout = setInterval(function() { tictac.checkInvites(); }, 10000);
+            tictac.state.inviteTimeout = setInterval(function() { tictac.checkInvites(); }, 30000);
          });
       },
       dumpAll: function() {
@@ -1283,8 +1368,10 @@
             tictac.state.overlay.originX = evt.clientX;
             tictac.state.overlay.originY = evt.clientY;
             tictac.state.overlay.action = action;
-            setTimeout(function() { tictac.showOverlay(action); }, 500);
+            setTimeout(function() { tictac.showOverlay(action); }, 300);
             
+            var currentlyOn = document.querySelector(".on");
+            currentlyOn && currentlyOn.classList.remove("on");
             $$(action+"Button").classList.add("on");
          } else {
             tictac.state.overlay.originX = evt.clientX;
@@ -1296,31 +1383,50 @@
          switch(action) {
             case "invite":
                tictac.fetchPlayers();
-            
-            break;
+               break;
 
             case "requests":
                tictac.checkInvites();
-            
-            break;
+               break;
             
             case "games":
                tictac.getGames();
-               
-            break;
+               break;
             
             case "settings":
-               
-            break;
+               tictac.loadPage("settings");
+               break;
       
             case "stats":
-
-            break;
+               tictac.loadPage("stats");
+               break;
             
+            case "welcome":
+               tictac.loadPage("welcome");
+               break;
+
+            case "help":
+               tictac.loadPage("help");
+               break;
+
             case "newgame":
             default:
                break;
 
+         }
+      },
+      loadPage: function(who, callback) {
+         if (!tictac.state.pages[who]) {
+            tictac.exec("getContent", {name: who}, function(response) {
+               var wrapper = $$(who+"Wrapper");
+
+               if (wrapper) {
+                  wrapper.innerHTML = response.content;
+               }
+               if (callback) {
+                  callback(response);
+               }
+            });
          }
       },
       restoreButtons: function(ok) {
@@ -1388,8 +1494,9 @@
             tictac.state.player2 = obj.game.player2_id;
             
             if (obj.players) {
-               for (var p of obj.players) {
-                  tictac.data.players[p.id] = p;
+               for (var p in obj.players) {
+                  var pl = obj.players[p];
+                  tictac.data.players[pl.id] = pl;
                }
             }
             var db = tictac.data.players,
@@ -1450,7 +1557,7 @@
                for (var r1=0; r1<3; r1++) {
                   for (var c1=0; c1<3; c1++) {
                      cellkey = gamekey + r1 + "" + c1;
-                     console.log("gamekey: "+gamekey + " cellkey: "+cellkey + " val: "+games[gamekey][cellkey]);
+                     // console.log("gamekey: "+gamekey + " cellkey: "+cellkey + " val: "+games[gamekey][cellkey]);
                      if (games[gamekey][cellkey]) {
                         var mark = document.createElement("img");
                         mark.src = "img/"+games[gamekey][cellkey]+".png";
@@ -1481,7 +1588,7 @@
          tictac.exec("getGame", {id: id}, function(obj) {
             tictac.data.currentGame = obj;
             tictac.state.game_id = obj.id;
-	    tictac.state.won = 0;
+	         tictac.state.won = 0;
             tictac.state.player1 = obj.player1_id;
             tictac.state.player2 = obj.player2_id;
             
@@ -1494,11 +1601,12 @@
             tictac.state.players[0] = db[obj.player1_id] || me;
             tictac.state.players[1] = db[obj.player2_id] || me;
             tictac.state.me.mymark = (tictac.state.player1 == tictac.state.me.id) ? "X" : "O";
-            
+            $$("spinner").classList.add(tictac.state.me.mymark);
+
             tictac.state.currentPlayer = obj.player_up;
 
             var gamedata = tictac.decodeGames(obj.game);
-            console.log("gameobj: "+obj.game+" gamedata: " + JSON.stringify(gamedata));
+            // console.log("gameobj: "+obj.game+" gamedata: " + JSON.stringify(gamedata));
             tictac.state.game = gamedata.game;
             tictac.state.games = gamedata.games;
 
@@ -1524,6 +1632,7 @@
             } else {
                tictac.state.currentGame="";
                tictac.clearDisabled();
+               tictac.growAll();
             }
 
             if (tictac.state.players[tictac.state.currentPlayer].id != tictac.state.me.id) {
@@ -1544,24 +1653,24 @@
          //$$("spotlightImg").className = "s"+who;
          if (tictac.mobile) $$("spotlight").style.height = "0";
          
-         // tictac.sounds['slide'].play();
-         var snd = new Audio("sounds/slide.mp3");
-         snd.play();
+         tictac.playSound("slide");
          setTimeout(function() { 
             $$('game' + who).classList.add("activeGame");
             if (tictac.mobile) {
-               var snd = new Audio("sounds/slide.mp3");
                $$("spotlight").className = "s" + who;
                $$("spotlight").style.height = "";
                $$("spotlight").style.display = "inline-block";
-               snd.play();
+               tictac.playSound("slide");
             }
          }, 600);
       },
       invite: function(id) {
          tictac.exec('invite', {player1_id: tictac.state.me.id, player2_id: id}, function(obj) {
+	    var btn = $$("btnInvite_"+id);
+	    btn.innerHTML = "Invited";
+	    btn.classList.add("invited");
+	    btn.closest("table").classList.add('dim');
             console.log("Sent invite for player ID "+id);
-            tictac.closeAllOverlays();
          });
       },
       initGameObject: function() {
@@ -1587,9 +1696,6 @@
       checkForMoves: function() {
          tictac.exec("getMoves", {for_player_id: tictac.state.me.id, game_id: tictac.state.game_id}, function(obj) {
             if (obj.moves.length) {
-               console.log("gotMoves!");
-               console.dir(obj);
-               
                for (var i in obj.moves) {
                   tictac.move(obj.moves[i].move, obj.moves[i].mark, true);
                   tictac.exec("ackMove", {id: obj.moves[0].id}, function(msg) {
@@ -1604,6 +1710,17 @@
             }
          }, 3000);
       },
+      doNotify: function(str, icon, title) {
+         if (Notification.permission === "granted") {
+            var options = { 
+               body: str,
+               icon: icon
+            };
+            return new Notification(title, options);
+         } else {
+            return false;
+         }
+      },
       encodeGames: function() {
          var val=1, 
              out = [];
@@ -1611,12 +1728,10 @@
          for (var r=0; r<3; r++) {
             for (var c=0; c<3; c++) {
                var tmp = tictac.encodeGame(tictac.state.games["game"+r+""+c], "game"+r+""+c);
-               console.log("encoded game"+r+""+c+": "+tmp);
                out.push(tmp.toString(16));
             }
          }
          out.push(tictac.encodeGame(tictac.state.game, ""));
-         console.log("encodeGames result: "+out);
          return out.join(":");
       },
       encodeGame: function(game, g) {
@@ -1669,19 +1784,22 @@
          return out;
       },
       newBoard: function() {
-         var board = '<tr><td id="container00" class="game_cell disabled"><table class="game" id="game00"><tr><td id="game0000" class="cell row0 col0"></td><td id="game0001" class="cell row0 col1"></td><td id="game0002" class="cell row0 col2"></td></tr><tr><td id="game0010" class="cell row1 col0"></td><td id="game0011" class="cell row1 col1"></td><td id="game0012" class="cell row1 col2"></td></tr><tr><td id="game0020" class="cell row2 col0"></td><td id="game0021" class="cell row2 col1"></td><td id="game0022" class="cell row2 col2"></td></tr></table></td>';
-         board += '<td id="container01" class="game_cell disabled"><table class="game" id="game01"><tr><td id="game0100" class="cell row0 col0"></td><td id="game0101" class="cell row0 col1"></td><td id="game0102" class="cell row0 col2"></td></tr><tr><td id="game0110" class="cell row1 col0"></td><td id="game0111" class="cell row1 col1"></td><td id="game0112" class="cell row1 col2"></td></tr><tr><td id="game0120" class="cell row2 col0"></td><td id="game0121" class="cell row2 col1"></td><td id="game0122" class="cell row2 col2"></td></tr></table></td>';
-         board += '<td id="container02" class="game_cell disabled"><table class="game" id="game02"><tr><td id="game0200" class="cell row0 col0"></td><td id="game0201" class="cell row0 col1"></td><td id="game0202" class="cell row0 col2"></td></tr><tr><td id="game0210" class="cell row1 col0"></td><td id="game0211" class="cell row1 col1"></td><td id="game0212" class="cell row1 col2"></td></tr><tr><td id="game0220" class="cell row2 col0"></td><td id="game0221" class="cell row2 col1"></td><td id="game0222" class="cell row2 col2"></td></tr></table></td>';
-         board += '<td id="scoreboard" rowspan="3" style="padding:0px;background-color:#000;"><table id="statusboard" style="background-color:#fff;"><tbody><tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr><tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr><tr><th><img src="img/X.png" height="50" width="50"></th></tr>';
-         
-         board += '<tr><td id="p1"><img src="img/avatars/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr><tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr><tr><th><img src="img/O.png" width="50" height="50"></th></tr><tr><td id="p2"><img id="player2Pic" src="img/avatars/robot.png" height="50" width="50"><br>Computer</td></tr><tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr><tr><th>Player<br>Up</th></tr><tr><td id="currentPlayer">X</td></tr><tr><td><button onclick="tictac.init()" id="gamenew">New Game</button></td></tr></tbody></table></td></tr>';
-        
-        board += '<tr><td id="container10" class="game_cell disabled"><table class="game" id="game10"><tr><td id="game1000" class="cell row0 col0"></td><td id="game1001" class="cell row0 col1"></td><td id="game1002" class="cell row0 col2"></td></tr><tr><td id="game1010" class="cell row1 col0"></td><td id="game1011" class="cell row1 col1"></td><td id="game1012" class="cell row1 col2"></td></tr><tr><td id="game1020" class="cell row2 col0"></td><td id="game1021" class="cell row2 col1"></td><td id="game1022" class="cell row2 col2"></td></tr></table class="game"></td>';
-        board += '<td id="container11" class="game_cell game_col1"><table class="game" id="game11"><tr><td id="game1100" class="cell row0 col0"></td><td id="game1101" class="cell row0 col1"></td><td id="game1102" class="cell row0 col2"></td></tr><tr><td id="game1110" class="cell row1 col0"></td><td id="game1111" class="cell row1 col1"></td><td id="game1112" class="cell row1 col2"></td></tr><tr><td id="game1120" class="cell row2 col0"></td><td id="game1121" class="cell row2 col1"></td><td id="game1122" class="cell row2 col2"></td></tr></table class="game"></td>';
-        board += '<td id="container12" class="game_cell disabled"><table class="game" id="game12"><tr><td id="game1200" class="cell row0 col0"></td><td id="game1201" class="cell row0 col1"></td><td id="game1202" class="cell row0 col2"></td></tr><tr><td id="game1210" class="cell row1 col0"></td><td id="game1211" class="cell row1 col1"></td><td id="game1212" class="cell row1 col2"></td></tr><tr><td id="game1220" class="cell row2 col0"></td><td id="game1221" class="cell row2 col1"></td><td id="game1222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
-         board += '<tr><td id="container20" class="game_cell disabled"><table class="game" id="game20"><tr><td id="game2000" class="cell row0 col0"></td><td id="game2001" class="cell row0 col1"></td><td id="game2002" class="cell row0 col2"></td></tr><tr><td id="game2010" class="cell row1 col0"></td><td id="game2011" class="cell row1 col1"></td><td id="game2012" class="cell row1 col2"></td></tr><tr><td id="game2020" class="cell row2 col0"></td><td id="game2021" class="cell row2 col1"></td><td id="game2022" class="cell row2 col2"></td></tr></table class="game"></td>';
-         board += '<td id="container21" class="game_cell disabled"><table class="game" id="game21"><tr><td id="game2100" class="cell row0 col0"></td><td id="game2101" class="cell row0 col1"></td><td id="game2102" class="cell row0 col2"></td></tr><tr><td id="game2110" class="cell row1 col0"></td><td id="game2111" class="cell row1 col1"></td><td id="game2112" class="cell row1 col2"></td></tr><tr><td id="game2120" class="cell row2 col0"></td><td id="game2121" class="cell row2 col1"></td><td id="game2122" class="cell row2 col2"></td></tr></table class="game"></td>';
-         board += '<td id="container22" class="game_cell disabled"><table class="game" id="game22"><tr><td id="game2200" class="cell row0 col0"></td><td id="game2201" class="cell row0 col1"></td><td id="game2202" class="cell row0 col2"></td></tr><tr><td id="game2210" class="cell row1 col0"></td><td id="game2211" class="cell row1 col1"></td><td id="game2212" class="cell row1 col2"></td></tr><tr><td id="game2220" class="cell row2 col0"></td><td id="game2221" class="cell row2 col1"></td><td id="game2222" class="cell row2 col2"></td></tr></table class="game"></td></tr>';
+         var board = "";
+         for (var r=0; r<3; r++) {
+            board += "<tr>";
+            for (var c=0; c<3; c++) {
+               board += "<td id='container"+r+""+c+"' class='game_cell game_row"+r+" game_col"+c+" disabled'><table class='game' id='game"+r+""+c+"'>";
+               for (var r1=0; r1<3; r1++) {
+                  board += "<tr>";
+                  for (var c1=0; c1<3; c1++) {
+                     board += "<td id='game"+r+""+c+""+r1+""+c1+"' class='cell row"+r1+" col"+c1+"'></td>";
+                  }
+                  board += "</tr>";
+               }
+               board += "</table></td>";
+            }
+            board += "</tr>";
+         }
          $$("gameboard").innerHTML = board;
       },
       extend: function(obj) {
@@ -1693,6 +1811,28 @@
                tictac[i] = obj[i];
             }
          }
+      },
+      grow: function(who, delay=0) {
+         var w = $$(who);
+         if (!w.parentNode.classList.contains('XWIN') && !w.parentNode.classList.contains('OWIN')) {
+            setTimeout(function() { 
+               w.classList.add("hop");
+            }, delay); 
+            setTimeout(function() { 
+               w.classList.remove("hop");
+            }, delay+150); 
+         }
+      },
+      growAll: function() {
+         var delay = 150; 
+         for (var g of document.querySelectorAll("table.game")) { 
+            if (g.id) { 
+               tictac.grow(g.id, delay); 
+               delay += 150; 
+            } 
+         
+         }
+
       }
 
    }
@@ -1721,7 +1861,7 @@
       tmp.play();
    });
 
-   var btns = ['invite','games','requests','settings','stats','fblogin'];
+   var btns = ['invite','games','help','requests','settings','stats','fblogin'];
    for (let b of btns) {
       var btn = $$(b+"Button");
       btn.addEventListener("click", function(event) {

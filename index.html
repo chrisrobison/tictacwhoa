@@ -6,6 +6,23 @@
    </head>
    <body>
       <div id="wrapper">
+         <div id='scoreboard' style='display:inline-block;'>
+         <table id="statusboard" style="background-color:#fff;">
+            <tbody>
+               <tr><th class="banner">Tic-<br>&nbsp;&nbsp;Tac-<br>&nbsp;&nbsp;&nbsp;&nbsp;Whoa!</th></tr>
+               <tr><td id="gameCount">Game: 0<br>Ties: 0</td></tr>
+               <tr><th><img src="img/X.png" height="50" width="50"></th></tr>
+               <tr><td id="p1"><img src="img/avatars/anonymous.png" id="player1Pic" height="50" width="50"><br>Anonymous</td></tr>
+               <tr><td><select onchange="tictac.changePlayer(0, this.options[this.selectedIndex].value)" id="player1"><option>Human</option><option>Computer</option><option>Facebook Login</option></select></td></tr>
+               <tr><th><img src="img/O.png" width="50" height="50"></th></tr>
+               <tr><td id="p2"><img id="player2Pic" src="img/avatars/robot.png" height="50" width="50"><br>Computer</td></tr>
+               <tr><td><select onchange="tictac.changePlayer(1, this.options[this.selectedIndex].value)" id="player2"><option>Human</option><option SELECTED>Computer</option><option>Facebook Login</option></select></td></tr>
+               <tr><th>Player<br>Up</th></tr>
+               <tr><td id="currentPlayer">X</td></tr>
+               <tr><td><button onclick="tictac.init()" id="gamenew">New Game</button></td></tr>
+            </tbody>
+         </table>
+         </div>
          <table id="gameboard"></table>
          <div id="spotlight"></div>
       </div>

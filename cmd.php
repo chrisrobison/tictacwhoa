@@ -102,7 +102,7 @@
 
          break;
        case "invites":
-         $result = mysql_query("select * from invite where player2_id='".$in->data->id."'");
+         $result = mysql_query("select * from invite where player2_id='".$in->data->id."' and declined=0 and started=0 and canceled=0");
          $invites = array();
          $requests = array();
          $players = array();
@@ -115,7 +115,7 @@
             $invite["photo"] = $players[$invite['player1_id']]["photo"];
             $invites[] = $invite;
          }
-         $result = mysql_query("select * from invite where player1_id='".$in->data->id."'");
+         $result = mysql_query("select * from invite where player1_id='".$in->data->id."' and declined=0 and started=0 and canceled=0");
          while ($request = mysql_fetch_assoc($result)) {
             if (!$players[$request['player2_id']]) {
                $player = getRecord('player', $request['player2_id']);
@@ -156,7 +156,7 @@
             $invite = getRecord('invite', $in->data->id);
             $player = getRecord('player', $invite['player2_id']);
 
-            $sql = "delete from invite where id='".$in->data->id."'";
+            $sql = "update invite set canceled=1 where id='".$in->data->id."'";
             doLog("[cancelInvite] Canceling invite to ".$player['player']." [invite id {$in->data->id}]");
             doLog("[cancelInvite] $sql");
             mysql_query($sql);
@@ -165,6 +165,16 @@
             $out->data = new stdClass();
             $out->data->msg = "Canceled invitation to {$player['player']} [invite id {$in->data->id}]";
          }
+         break;
+      case "ackMove":
+         $sql = "update invite set seen=1 where id={$in->data->id}";
+         doLog("[ackMove] $sql");
+         mysql_query($sql);
+         $out = new stdClass();
+         $out->action = "notify";
+         $out->data = new stdClass();
+         $out->data->msg = "Move ID {$in->data->id} acknowledged";
+
          break;
       case "start":
          $data = $in->data;
@@ -279,6 +289,19 @@
             mysql_query($sql);
          }
          break;
+
+      case "getContent":
+         if ($in->data->name) {
+            $out = new stdClass();
+            $out->name = $in->data->name;
+            if (file_exists("pages/{$in->data->name}.html")) {
+               $out->content = file_get_contents("pages/{$in->data->name}.html");
+            } else {
+               $out->content = "";
+               $out->error = "File not found.";
+            }
+         }
+         break;
  }
    
    function makeInsert($table, $fields, $data) {
@@ -299,30 +322,32 @@
    }
 
    function cleanInput($in) {
-      switch (gettype($in)) {
-         case "object":
-            $new = new stdClass();
-            break;
-         case "array":
-            $new = array();
-            break;
-      }
+      if ($in) {
+	      switch (gettype($in)) {
+		 case "object":
+		    $new = new stdClass();
+		    break;
+		 case "array":
+		    $new = array();
+		    break;
+	      }
 
-      foreach ($in as $key=>$val) {
-         if (is_object($val)) {
-            $new->$key = cleanInput($val);
-         } else if (is_array($val)) {
-            $new[$key] = cleanInput($val);
-         }
-         if (is_scalar($val)) {
-            if (is_object($new)) {
-               $new->$key = mysql_real_escape_string($val);
-            } else if (is_array($new)) {
-               $new[] = mysql_real_escape_string($val);
-            }
-         } 
-      }
-      return $new;
+	      foreach ($in as $key=>$val) {
+		 if (is_object($val)) {
+		    $new->$key = cleanInput($val);
+		 } else if (is_array($val)) {
+		    $new[$key] = cleanInput($val);
+		 }
+		 if (is_scalar($val)) {
+		    if (is_object($new)) {
+		       $new->$key = mysql_real_escape_string($val);
+		    } else if (is_array($new)) {
+		       $new[] = mysql_real_escape_string($val);
+		    }
+		 } 
+	      }
+	      return $new;
+      } 
    }
    
    function getRecord($tbl, $id, $field="id") {
@@ -349,8 +374,13 @@
       return $out;
    }
 
-   function pickMove($game, $g, $me) {
+   function pickMove($game, $g, $me, $skill=50) {
       doLog("=============================\n[pickMove] game: ".print_r($game, true)." g: $g   me: $me");
+      if (rand(0, 100) > $skill) {
+         $out = pickRandom($game);
+         doLog("[pickMove] Low skill bot pick (skill: $skill, pick: $out)");
+         return $out;
+      }
       $out = "";
       for ($r=0; $r<3; $r++) {
          doLog("[pickMove] Checking row $r ...{$g}{$r}0: ".$game["{$g}{$r}0"]."  {$g}{$r}1: ".$game["{$g}{$r}1"]."  {$g}{$r}2: ".$game["{$g}{$r}2"]);
@@ -589,7 +619,7 @@
             $out[$r.$c] = checkWin($games[$g], $g);
          }
       }
-      console.log("[SYNC GAMES] Game state: ".print_r($out, true));
+      doLog("[SYNC GAMES] Game state: ".print_r($out, true));
       return $out;
    }
 
@@ -655,7 +685,8 @@
    function start($data) {
       if ($data->id) {
          $invite = getRecord('invite', $data->id);
-         deleteRecord('invite', $data->id);
+         $sql = "update invite set started=1 where id={$data->id}";
+         mysql_query($sql);
          
          $data->player1_id = $invite['player1_id'];
          $data->player2_id = $invite['player2_id'];
