@@ -31,7 +31,6 @@ table,td,tr,th,img { margin:0; padding:0; }
 .game_cell {
    height:7em;
    width:7em;
-   background-color:#555;
 }
 #gameboard > tbody > tr > td {
    padding: .5em;
@@ -69,6 +68,20 @@ td.cell.filled:hover {
 .O {
    background-color:rgba(0,100,255,0);
 }
+.Xtxt {
+   color:#eeee00;
+   -webkit-text-stroke: .5px rgba(0,0,0,.25);
+   text-align:left;
+   padding-top:1em;
+}
+.Otxt {
+   color:#0088ee;
+   -webkit-text-stroke: .5px rgba(255,255,255,.75);
+   text-align:left;
+   padding-top:2em;
+}
+#scoreboard th { font-size: 2em; font-family:"Fontdiner Swanky"; padding-left:.5em;}
+
 
 th { background-color:#000; color:#0f0; }
 #currentPlayer { height:2em; }   
@@ -122,7 +135,7 @@ button { font-size: 14px; padding: .5em .25em; cursor:pointer; }
 }
 #p1 { min-height:100px; }
 #p2 { min-height:100px; }
-#scoreboard { float:left; vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; width:115px; }
+#scoreboard { vertical-align: top; padding: 0px; margin: 0px; border-left: .5em solid rgb(0, 0, 0); height: 100%; cursor: default; }
 .Xcursor { cursor: url(img/Xcursor.png) 50 50, auto; }
 .Ocursor { cursor: url(img/Ocursor.png) 50 50, auto; }
 .banner { 

@@ -100,6 +100,7 @@
          tictac.changePlayer(1, tictac.player[1]);
 
          tictac.state.currentGame = "";
+         tictac.state.pickMode = ""; 
          tictac.clearDisabled();
 //         tictac.disableAll();
          tictac.clearActive();
@@ -107,7 +108,7 @@
          if (tictac.state.currentGame) {
             $$("spotlight").style.height = "0";
             $$("spotlight").classList.add("s"+tictac.state.currentGame);
-         
+            tictac.state.pickMode = ""; 
             setTimeout(function() {
                tictac.makeActive(tictac.state.currentGame);
             }, 500);
@@ -164,6 +165,8 @@
                      plist.appendChild(op);
                      plist.selectedIndex = plist.options.length - 1;
                      $$("player"+(player+1)+"Pic").src = response.picture.data.url;
+                     $$("player"+(player+1)+"Txt").innerHTML = response.name;
+
                      tictac.state.me = {};
                      tictac.state.me.photo = tictac.state.players[player].photo = response.picture.data.url;
                      tictac.state.me.player = tictac.state.players[player].player = response.name;
@@ -924,30 +927,31 @@
          var s3 = cells[2].match(/(\d)(\d)/);
          
          if (parseInt(s1[1]) == parseInt(s2[1])) {
-            w = "570px";
-            h = "25px";
-            line.style.top = 280 + (210 * (s1[1]-1)) + "px";
+            w = "26em";
+            h = "1.2em";
+            line.style.top = 3 + (9 * (s1[1])) + "em";
+            line.style.left = "5em";
          }
          if (parseInt(s1[2]) == parseInt(s2[2])) {
-            w = "25px";
-            h = "570px";
-            line.style.top = "5px";
-            line.style.marginLeft = 290 + (218 * (s1[2]-1)) + "px";
+            w = "1.2em";
+            h = "26em";
+            line.style.top = ".25em";
+            line.style.marginLeft = 3 + (9 * (s1[2])) + "em";
          }
          if (s1[1]==0 && s1[2] == 0 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==2) {
-            w = "780px";
-            h = "25px";
+            w = "36em";
+            h = "1.2em";
             line.style.transformOrigin = "0% 0%";
-            line.style.top = "5px";
-            line.style.marginLeft = "40px";
+            line.style.top = ".25em";
+            line.style.marginLeft = "2em";
             line.style.transform="rotate(45deg)";
          }
          if (s1[1]==0 && s1[2] == 2 && s2[1]==1 && s2[2]==1 && s3[1]==2 && s3[2]==0) {
-            w = "780px";
-            h = "25px";
+            w = "36em";
+            h = "1.2em";
             line.style.transformOrigin = "0% 0%";
-            line.style.top = "570px";
-            line.style.marginLeft = "4px";
+            line.style.top = "25em";
+            line.style.left = "-1em";
             line.style.transform="rotate(-45deg)";
          }
          
@@ -1051,7 +1055,7 @@
             for (var i in invites) {
                var invite = invites[i];
                tictac.data.invites[invites[i].id] = invite;
-               out += '<table class="request"><tr><td style="width:50px"><img src="'+invite['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request from ' + invite['player'] + '</div>';
+               out += '<table class="request"><tr><td style="width:75px"><img src="'+invite['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request from ' + invite['player'] + '</div>';
                out += 'Requested: ' + tictac.dateDuration(invite.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button class="highlight btn accept" onclick="tictac.accept(' + invite['id'] + ', ' + invite['player1_id'] + ')">Accept</button>';
                out += '<button class="highlight btn ignore" onclick="tictac.ignore(' + invite['id'] + ')">Ignore</button>';
                out += '<button class="highlight btn decline" onclick="tictac.decline(' + invite['id'] + ')">Decline</button>';
@@ -1064,7 +1068,7 @@
          for (var i in reqs) {
             var req = reqs[i];
             tictac.data.requests[reqs[i].id] = req;
-            out += '<table class="request"><tr><td style="width:50px"><img src="'+req['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request to ' + req['player'] + '</div>';
+            out += '<table class="request"><tr><td style="width:75px"><img src="'+req['photo']+'" class="profilePic"></td><td><div class="requestHeader">Request to ' + req['player'] + '</div>';
             out += 'Requested: ' + tictac.dateDuration(req.created, "now") + '</td><td style="text-align:right;white-space:nowrap"><button style="width:10em" class="highlight btn cancel" onclick="tictac.cancelInvite(' + req['id'] + ')">Cancel Invitation</button>';
             out += '</td></tr></table>';
          }
@@ -1288,7 +1292,7 @@
             setTimeout(function() {
                $$("fbloginButton").style.display = "none";
                tictac.checkInvites();
-               setTimeout(function() { tictac.getGames(); }, 750);
+               setTimeout(function() { tictac.getGames(); }, 50);
             }, 750);
             tictac.state.inviteTimeout = setInterval(function() { tictac.checkInvites(); }, 30000);
          });
@@ -1463,33 +1467,31 @@
          }
       },
       updatePlayers: function() {
-         var p1, p2;
          if (tictac.state.player1==tictac.state.me.id) {
-            p1 = "<img id='player1Pic' src=" + tictac.state.me.photo + " height='50' width='50'><br>" + tictac.state.me.player;
+            $$("player1Pic").src= tictac.state.me.photo;
+            $$("player1Txt").innerHTML = tictac.state.me.player;
             
-            p2 = "<img id='player2Pic' src=" + tictac.data.players[tictac.state.player2].photo + " height='50' width='50'><br>" + tictac.data.players[tictac.state.player2].player;
+            $$("player2Pic").src= tictac.data.players[tictac.state.player2].photo;
+            $$("player2Txt").innerHTML = tictac.data.players[tictac.state.player2].player;
          } else {
-            p1 = "<img id='player1Pic' src=" + tictac.data.players[tictac.state.player1].photo + " height='50' width='50'><br>" + tictac.data.players[tictac.state.player1].player;
-            p2 = "<img id='player2Pic' src=" + tictac.state.me.photo + " height='50' width='50'><br>" + tictac.state.me.player;
+            $$("player1Pic").src= tictac.data.players[tictac.state.player1].photo;
+            $$("player1Txt").innerHTML = tictac.data.players[tictac.state.player1].player;
+         
+            $$("player2Pic").src= tictac.state.me.photo;
+            $$("player2Txt").innerHTML = tictac.state.me.player;
          }
-         
-         // p1 += "<br><span id='p0Score'>"+tictac.state.players[0].score+" [w:"+tictac.state.players[0].smallscore+" t:"+tictac.state.players[0].tie+"]</span>";
-         // p2 += "<br><span id='p1Score'>"+tictac.state.players[1].score+" [w:"+tictac.state.players[1].smallscore+" t:"+tictac.state.players[1].tie+"]</span>";
-         
-         $$("p1").innerHTML = p1;
-         $$("p2").innerHTML = p2;
-
       },
       accept: function(id, p1id) {
          var game = tictac.initGameObject();
          tictac.state.game = game.game;
          tictac.state.games = game.games;
          var encGame = tictac.encodeGames();
+         $$("spinner").style.display = "none";
 
          tictac.exec("start", {id: id, player1_id:p1id, player2_id:tictac.state.me.id, game: encGame}, function(obj) {
             tictac.data.currentGame = obj.game;
             tictac.state.game_id = obj.game.id;
-	    tictac.state.won = 0;
+	         tictac.state.won = 0;
             tictac.state.player1 = obj.game.player1_id;
             tictac.state.player2 = obj.game.player2_id;
             
@@ -1544,6 +1546,7 @@
          }      
       },
       loadGame: function(game, games) {
+         $$("spinner").style.display = "none";
          tictac.clearWinline();
          tictac.state.game = game;
          tictac.state.games = games;
@@ -1585,6 +1588,7 @@
          });
       },
       play: function(id) {
+         $$("spinner").style.display = "none";
          tictac.exec("getGame", {id: id}, function(obj) {
             tictac.data.currentGame = obj;
             tictac.state.game_id = obj.id;

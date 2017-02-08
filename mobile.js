@@ -34,10 +34,12 @@
  
       });
       $$("spotlight").addEventListener("click", function(evt) {
-         tictac.state.pickMode = "";
-         tictac.state.currentGame = "";
-         tictac.clearActive();
-         $$("spotlight").style.height = "0";
+         if (tictac.state.currentGame=="") {
+            tictac.state.pickMode = "";
+            tictac.state.currentGame = "";
+            tictac.clearActive();
+            $$("spotlight").style.height = "0";
+         }
       });
    }
 })(window);
