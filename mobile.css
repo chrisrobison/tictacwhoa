@@ -81,22 +81,22 @@ table#gameboard td > table.hop { transform: scale(2); outline: .5em solid #ff000
    overflow:hidden;
    height:0px;
 }
-#spotlight.s00 { top:3.2em; left:0em; width:23.4em; height:20em; }
-#spotlight.s01 { top:3em; left:1.3em;  width:24em; height:21em; }
+#spotlight.s00 { top:3.2em; left:-0.4em; width:23.4em; height:20em; }
+#spotlight.s01 { top:3em; left:1.4em;  width:24em; height:21em; }
 #spotlight.s02 { top:3.2em; left:2.3em;  width:530px; height:21em; }
 #spotlight.s10 { top:13.5em; left:-1.8em; width:27em; height:12em; }
 #spotlight.s11 { top:13em; left:1.4em;  width:24em; height:12em; }
 #spotlight.s12 { top:12.4em; left:2.3em;  width:24em; height:13em; }
-#spotlight.s20 { top:21.7em; left:-0.4em; width:24em; height:5em; }
+#spotlight.s20 { top:21.5em; left:-0.4em; width:24em; height:5em; }
 #spotlight.s21 { top:21.9em; left:-0.3em; width:26.5em; height:4.6em; }
 #spotlight.s22 { top:21.7em; left:1.5em; width:590px; height:4.6em; }
 div#spotlight img { display: none; }
-div#spotlight.s00 img#s00 { width:23.4em; height:20em; display: inline; }
-div#spotlight.s01 img#s01 { width:23.4em; height:20.3em; display: inline; }
-div#spotlight.s02 img#s02 { width:23em; height:20em; display: inline; }
-div#spotlight.s10 img#s10 { width:23.4em; height:11.2em; display: inline; }
-div#spotlight.s11 img#s11 { width:24em; height:12em; display: inline; }
-div#spotlight.s12 img#s12 { width:23.5em; height:12.4em; display: inline; }
+div#spotlight.s00 img#s00 { width:24em; height:19.4em; display: inline; }
+div#spotlight.s01 img#s01 { width:24em; height:19.8em; display: inline; }
+div#spotlight.s02 img#s02 { width:24em; height:19.6em; display: inline; }
+div#spotlight.s10 img#s10 { width:24em; height:10.9em; display: inline; }
+div#spotlight.s11 img#s11 { width:24em; height:11.3em; display: inline; }
+div#spotlight.s12 img#s12 { width:24em; height:12em; display: inline; }
 div#spotlight.s20 img#s20 { width:23.6em; height:4.5em; display: inline; }
 div#spotlight.s21 img#s21 { width:24em; height:4.6em; display: inline; }
 div#spotlight.s22 img#s22 { width:23.6em; height:4.6em; display: inline; }

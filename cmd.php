@@ -469,8 +469,8 @@
       
       for ($r=0; $r<3; $r++) {
          for ($c=0; $c<3; $c++) {
-            if ($game["$g$r$c"]!="") {
-               $out += $val[$game["$g$r$c"]];
+            if ($game["{$g}{$r}{$c}"]!="") {
+               $out += $val[$game["{$g}{$r}{$c}"]];
             }
             $val['X'] *= 2;
             $val['O'] *= 2;

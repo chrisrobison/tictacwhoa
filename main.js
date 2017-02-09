@@ -82,6 +82,7 @@
          $$("gameboard").innerHTML = "";
          tictac.newBoard();
          $$("gameboard").onclick = tictac.click;
+         $$("gameboard").ontouchstart = tictac.click;
          if (!tictac.player) {
             tictac.player = [];
          }
@@ -99,15 +100,17 @@
          tictac.changePlayer(0, tictac.player[0]);
          tictac.changePlayer(1, tictac.player[1]);
 
-         tictac.state.currentGame = "";
+         tictac.state.currentGame = "11";
          tictac.state.pickMode = ""; 
          tictac.clearDisabled();
-//         tictac.disableAll();
+         tictac.disableAll();
          tictac.clearActive();
          
          if (tictac.state.currentGame) {
-            $$("spotlight").style.height = "0";
-            $$("spotlight").classList.add("s"+tictac.state.currentGame);
+            if (tictac.mobile) {
+               $$("spotlight").style.height = "0";
+               $$("spotlight").classList.add("s"+tictac.state.currentGame);
+            }
             tictac.state.pickMode = ""; 
             setTimeout(function() {
                tictac.makeActive(tictac.state.currentGame);
@@ -121,7 +124,9 @@
          
          $$("gameCount").innerHTML = "Game: " + tictac.state.gameCount + "<br>Ties: " + tictac.state.gameTies;
          tictac.state.me.mymark = "X";
-         $$("spotlight").style.display = "none";
+         if (tictac.mobile) {
+            $$("spotlight").style.display = "none";
+         }
          if ((tictac.player[0]=="Computer") && (tictac.player[1]=="Computer")) {
             tictac.automove();
          }
@@ -232,20 +237,24 @@
 
          // Take care of DOM stuff first
          var mark = document.createElement("img");
+         //mark.src = (tictac.mobile) ? "img/"+player+".png" : "img/ani"+player+".gif";
          mark.src = "img/ani"+player+".gif";
+         
          mark.className = "mark";
          tgt.appendChild(mark);
+         
+         // tgt.innerHTML = player;
+         setTimeout(function() { 
+            mark.classList.add("marked"); 
+            tictac.playSound("move"+tictac.state.currentPlayer);
+            tgt.classList.remove("active");
+         }, 5);
+         tgt.classList.add(player);
          
          setTimeout(function() {
             mark.src = "img/"+player+".png";
          }, 2000);
 
-         // tgt.innerHTML = player;
-         setTimeout(function() { 
-            mark.classList.add("marked"); 
-            tictac.playSound("move"+tictac.state.currentPlayer);
-         }, 150);
-         tgt.classList.add(player);
          
          // Log player move 
          tictac.state.games["game"+tictac.state.currentGame][spot] = player;
@@ -515,6 +524,8 @@
       click: function(evt) {
          var tgt = evt.target;
          if (tgt.id.match(/^game/)) {
+            tgt.classList.add("active");
+            setTimeout(function() { tgt.classList.remove("active"); }, 300);
             tictac.move(tgt.id, tictac.state.currentSymbol());
          }
          
@@ -1487,6 +1498,7 @@
          tictac.state.games = game.games;
          var encGame = tictac.encodeGames();
          $$("spinner").style.display = "none";
+         $$("spotlight").style.display = "none";
 
          tictac.exec("start", {id: id, player1_id:p1id, player2_id:tictac.state.me.id, game: encGame}, function(obj) {
             tictac.data.currentGame = obj.game;
@@ -1589,6 +1601,7 @@
       },
       play: function(id) {
          $$("spinner").style.display = "none";
+         $$("spotlight").style.display = "none";
          tictac.exec("getGame", {id: id}, function(obj) {
             tictac.data.currentGame = obj;
             tictac.state.game_id = obj.id;
@@ -1622,12 +1635,12 @@
             tictac.clearDisabled();
             tictac.disableAll();
             tictac.clearActive();
-            
+            tictac.state.currentGame = "";
+
             if (obj.last_move) {
                var parts;
                if (parts = obj.last_move.match(/game(\d\d)(\d\d)/)) {
                   tictac.state.currentGame = parts[2];
-                  // if (tictac.mobile) tictac.fillBig();
                }
             }
 
