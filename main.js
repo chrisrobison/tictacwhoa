@@ -1855,7 +1855,8 @@
    }
    window.$$ = $$ = function(el) { return document.getElementById(el); };
    var btns = document.querySelectorAll(".button > img");
-   for (let btn of btns) {
+   for (var i in btns) {
+      var btn = btns[i];
       btn.addEventListener("click", function(event) {
          tictac.doAction(event.currentTarget.id, event);
          tictac.sounds['pop'].volume = .5;

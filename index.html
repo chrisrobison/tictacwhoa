@@ -2,16 +2,21 @@
 <html>
    <head>
       <title>Tic Tac Whoa!</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=.5" />
+      <meta name="apple-mobile-web-app-capable" content="yes">
       <link rel="stylesheet" type="text/css" href="default.css"/>
+      <link rel="stylesheet" type="text/css" href="mobile.css"/>
       <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
       <script>
-         (adsbygoogle = window.adsbygoogle || []).push({
-            google_ad_client: "ca-pub-4259851073764949",
-            enable_page_level_ads: true
-         });
-      </script>
+        (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-4259851073764949",
+          enable_page_level_ads: true
+        });
+      </script>   
    </head>
    <body>
+      <h1 id='toptitle'>Tic-Tac-Whoa!</h1>
       <div id='scoreboard' style='display:inline-block;'>
          <table id="statusboard" style="background-color:#fff;">
             <tbody>
@@ -36,18 +41,41 @@
          <div id="spotlight"></div>
       </div>
       <div id="spinner">
-        <img id='i1' src="img/X.png" class='spinning'>
-        <img id='i0' src="img/O.png" class='rotating'>
+         <img id='i1' src="img/X.png" class='spinning'>
+         <img id='i0' src="img/O.png" class='rotating'>
       </div>
+      <div id="currentWrapper">
+         <table class="game" id="currentGame" style='display:none'>
+            <tbody>
+               <tr>
+                  <td id="big00" class="big cell row0 col0"></td>
+                  <td id="big01" class="big cell row0 col1"></td>
+                  <td id="big02" class="big cell row0 col2"></td>
+                  <td id="big03" class="big cell row0 col2" rowspan='3'></td>
+               </tr>
+               <tr>
+                  <td id="big10" class="big cell row1 col0"></td>
+                  <td id="big11" class="big cell row1 col1"></td>
+                  <td id="big12" class="big cell row1 col2"></td>
+               </tr>
+               <tr>
+                  <td id="big20" class="big cell row2 col0"></td>
+                  <td id="big21" class="big cell row2 col1"></td>
+                  <td id="big22" class="big cell row2 col2"></td>
+               </tr>
+            </tbody>
+         </table>
+      </div><br clear="both">
       <div id="buttonbar">
          <!--div class='button' id='newgameButton'><img id='newgame' src='img/newgame.png' alt='New Game'><br><span class='label' id='newgameLabel'>New Game</span></div-->
-         <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/btn/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
+         <!--div class='button' id='newgameButton'><img id='game' src='img/game.png' alt='Current Game'><br><span class='label' id='gameLabel'>Current Game</span></div-->
          <div class='button' id='inviteButton'><img id='invite' src='img/btn/invite.png' alt='Send a Game Invitation'><br><span class='label' id='inviteLabel'>Invite Friends</span></div>
          <div class='button' id='requestsButton'><img id='requests' src='img/btn/requests.png' alt='Game Requests'><br><span class='label' id='requestsLabel'>Game Requests</span></div>
          <div class='button' id='gamesButton'><img id='games' src='img/btn/game.png' alt='Your Current Games'><br><span class='label' id='gamesLabel'>Active Games</span></div>
-         <div class='button' id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
-         <div class='button' id='statsButton'><img id='stats' src='img/btn/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
+         <div class='button' style="display:none" id='settingsButton'><img id='settings' src='img/btn/settings.png' alt='Preferences'><br><span class='label' id='settingsLabel'>Settings</span></div>
+         <div class='button' style="display:none" id='statsButton'><img id='stats' src='img/btn/stats.png' alt='Player Statistics'><br><span class='label' id='statsLabel'>Statistics</span></div>
          <div class='button ok' id='helpButton'><img id='help' src='img/btn/help.png' alt='Help'><br><span class='label' id='helpLabel'>Help</span></div>
+         <div class='button ok' id='fbloginButton'><a href="#fblogin" onclick="return tictac.changePlayer(0, 'Facebook Login')"><img id='fblogin' src='img/btn/fblogin.png' alt='Login with Facebook'></a><br><span class='label' id='fbloginLabel'>Login with Facebook</span></div>
       </div>
       <div id='newgameOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('newgame',1)"><img src="img/close.png" class="closeImage"></a>
@@ -58,69 +86,44 @@
       <div id='inviteOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#invite" onclick="return tictac.closeOverlay('invite',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Invite a Friend</h1>
-         <div class="scrollUp">&#9650;</div>
          <div id="invitesWrapper"></div>
-         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='requestsOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#requests" onclick="return tictac.closeOverlay('requests',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Requests</h1>
-         <div class="scrollUp">&#9650;</div>
          <div id="requestsWrapper"></div>
-         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='gamesOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#" onclick="return tictac.closeOverlay('games',1)"><img src="img/close.png" class="closeImage"></a>
+         <a class="closeButton" href="#games" onclick="return tictac.closeOverlay('games',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Active Games</h1>
-         <div class="scrollUp">&#9650;</div>
          <div id="gamesWrapper"></div>
-         <div class="scrollDown">&#9660;</div>
       </div>
       <div id='settingsOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#" onclick="return tictac.closeOverlay('settings',1)"><img src="img/close.png" class="closeImage"></a>
+         <a class="closeButton" href="#settings" onclick="return tictac.closeOverlay('settings',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Settings</h1>
-         <div class="scrollUp">&#9650;</div>
-         <div id="settingsWrapper">
-            <table id='settingsTable'>
-               <tr>
-                  <td style='width:50%'>Sound Effects</td>
-                  <td style='width:50%'><input type='checkbox' class='toggle toggle-round' id='soundEffects'><label for='soundEffects'></label></td>
-               </tr>
-            </table>
-         </div>
-         <div class="scrollDown">&#9660;</div>
+         <div id="settingsWrapper"></div>
       </div>
       <div id='statsOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
+         <a class="closeButton" href="#stats" onclick="return tictac.closeOverlay('stats',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Game Statistics</h1>
-         <div class="scrollUp">&#9650;</div>
-         <div id='statsWrapper'>
-         </div>
-         <div class="scrollDown">&#9660;</div>
+         <div id="statsWrapper"></div>
       </div>
       <div id='helpOverlay' style='display:none;' class='overlay'>
-         <a class="closeButton" href="#" onclick="return tictac.closeOverlay('help',1)"><img src="img/close.png" class="closeImage"></a>
-         <h1>Tic-Tac-Whoa!<br>Help</h1>
-         <div class="scrollUp">&#9650;</div>
-         <div id='helpWrapper'>
-         </div>
-         <div class="scrollDown">&#9660;</div>
+         <a class="closeButton" href="#help" onclick="return tictac.closeOverlay('help',1)"><img src="img/close.png" class="closeImage"></a>
+         <h1>Help</h1>
+         <div id="helpWrapper"></div>
       </div>
-
       <div id='errorOverlay' style='display:none;' class='overlay'>
          <a class="closeButton" href="#error" onclick="return tictac.closeOverlay('error',1)"><img src="img/close.png" class="closeImage"></a>
          <h1>Sorry, you can't <br>do that (yet).</h1><br>
-         <div class="scrollUp">&#9650;</div>
-         <div id='errorWrapper'>
-            <p style='text-align:left;'>You are trying to use features that are only available if you are logged in.  To login using Facebook, click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) 
+         <p>You are trying to use features that are only available if we know who you are.  Click the blue Facebook Login button (<img src='img/fblogin_small.png' height='42' width='42' style='vertical-align: bottom;margin-top:-10px;top:6px;position:relative;'>) at the bottom-right of the screen 
             and give approval to unlock all multiplayer features.  Tic-Tac-Whoa! only retrieves basic information such as your name and email address as
-            well as your friend list so you may invite friends to play one-on-one.</p>
-         </div>
-         <div class="scrollDown">&#9660;</div>
+            well as your friend list so you may invite friends to play one on one.</p>
       </div>
       <div id='fb-root'></div>
    </body>
    <script src='main.js'> </script>
+   <script src='mobile.js'> </script>
    <script>
    // Facebook login stuff
    (function(d, s, id) {
