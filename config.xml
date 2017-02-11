@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<widget id="com.pgb.brewapp" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+<widget id="com.cdr2.tictacwhoa" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
 	<name>Tic-Tac-Whoa!</name>
 	<description>
 		This new take on the old classic breathes new life into the game. Games within games! Whoa!
@@ -59,9 +59,9 @@
    <engine name="wp8" spec="~3.8.1" />
    <engine name="android" spec="~5.0.0" />
    <engine name="ios" spec="~4.2.1" />
-   <plugin name="com.phonegap.plugins.facebookconnect" spec="0.12.0" source="pgb">
+   <gap:plugin name="com.phonegap.plugins.facebookconnect" spec="0.12.0" source="pgb">
       <param name="APP_ID" value="113717832467893" />
       <param name="APP_NAME" value="Tic-Tac-Whoa!" />
-   </plugin>
+   </gap:plugin>
 
 </widget>
