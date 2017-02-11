@@ -10,7 +10,7 @@
 	</author>
 
 	<preference name="phonegap-version" value="cli-6.5.0" />
-   
+   <preference name="android-minSdkVersion" value="15" />    
    <platform name="ios">
       <icon platform="ios" src="res/icons/ios/icon-small.png" width="29" height="29" />
       <icon platform="ios" src="res/icons/ios/icon-small-2x.png" width="58" height="58" />
