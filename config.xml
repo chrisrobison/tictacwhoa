@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.pgb.brewapp" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+	<name>Tic-Tac-Whoa!</name>
+	<description>
+		This new take on the old classic breathes new life into the game. Games within games! Whoa!
+	</description>
+
+	<author email="cdr@netoasis.net" href="http://cdr2.com">
+	   Christopher D. Robison
+	</author>
+
+	<preference name="phonegap-version" value="cli-6.5.0" />
+</widget>
