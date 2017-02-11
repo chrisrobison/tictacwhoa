@@ -59,7 +59,7 @@
    <engine name="wp8" spec="~3.8.1" />
    <engine name="android" spec="~5.0.0" />
    <engine name="ios" spec="~4.2.1" />
-   <gap:plugin name="com.phonegap.plugins.facebookconnect" version="0.12.0">
+   <gap:plugin name="cordova-plugin-facebook4" source="npm">
       <param name="APP_ID" value="113717832467893" />
       <param name="APP_NAME" value="Tic-Tac-Whoa!" />
    </gap:plugin>
