@@ -1855,7 +1855,7 @@
    }
    window.$$ = $$ = function(el) { return document.getElementById(el); };
    var btns = document.querySelectorAll(".button > img");
-   for (var i in btns) {
+   for (var i=0; i<btns.length; i++) {
       var btn = btns[i];
       btn.addEventListener("click", function(event) {
          tictac.doAction(event.currentTarget.id, event);
